@@ -14,28 +14,33 @@ ArrayList<ArrayList<Float>> pts = new ArrayList<ArrayList<Float>>();
 ArrayList<Float> dds;
 ArrayList<Integer> mpts = new ArrayList<Integer>();
 
-// White (inivisible datapoints)
-color c1 = color(255);
-color c2 = color(255);
+// White (invisible datapoints)
+//color c1 = color(255);
+//color c2 = color(255);
 
-// color c1 = color(190);
-// color c2 = color(0);
+// Black (visible datapoints)
+color c1 = color(5);
+color c2 = color(5);
+
+// Colors by AS
+// color c1 = color(255, 0, 0);
+// color c2 = color(0, 0, 255);
+
+//Color of wave/circle
+int wavecolor = 255;
 
 int dim1 = 2;
 int dim2 = 4;
 int dim3col = 10;
-float speed = 20;
-float volume = 0.1;
+float speed = 1;
+float volume = 1;
 
 //
 
 int baset = 0;
 int mx = 0;
 int my = 0;
-
 int idx = 0;
-
-
 
 void setup() {
   size(700, 400);
@@ -43,14 +48,6 @@ void setup() {
   
   /* start oscP5, listening for incoming messages at port 12000 */
   oscP5 = new OscP5(this,57110);
-  
-  /* myRemoteLocation is a NetAddress. a NetAddress takes 2 parameters,
-   * an ip address and a port number. myRemoteLocation is used as parameter in
-   * oscP5.send() when sending osc packets to another computer, device, 
-   * application. usage see below. for testing purposes the listening port
-   * and the port of the remote location address are the same, hence you will
-   * send messages back to this sketch.
-   */
   myRemoteLocation = new NetAddress("127.0.0.1",57110);
   
   // Open the file from the createWriter() example
@@ -87,7 +84,7 @@ void setup() {
 }
 
 void draw() {
-  //   println(frameRate);
+  //   println(frameRate);       
   background(255);
   noStroke();
   for (ArrayList<Float> pt : pts) {
@@ -107,7 +104,7 @@ if (true) {
   if (dds != null && dt <= 10 * dds.get(mpts.get(mpts.size()-1))+100) {
     // show shockwave
     noFill();
-    stroke(0);
+    stroke(wavecolor);
     // ellipse takes diam == 2* distance
     ellipse(mx, my, .2*dt, .2*dt);    
     // get trigger
@@ -119,7 +116,12 @@ if (true) {
           //explosion
           ellipse(x, y, 10, 10);
           
-      
+          
+          //OSC Bundle 
+          OscBundle myBundle = new OscBundle();
+          // and time tag 
+          myBundle.setTimetag(myBundle.now());
+         
           // send osc
           OscMessage myMessage = new OscMessage("/s_new");
           myMessage.add("spring");
@@ -129,13 +131,19 @@ if (true) {
           myMessage.add("springfac"); 
           
          // myMessage.add(15000); 
-          myMessage.add(1100); 
+          myMessage.add(1000); 
           myMessage.add("damp"); 
           myMessage.add(0.0007);
           myMessage.add("amp"); 
           myMessage.add(volume);  
-          oscP5.send(myMessage, myRemoteLocation);          
          
+          //OSC Bundle 
+          myBundle.add(myMessage);
+          oscP5.send(myBundle, myRemoteLocation);
+
+          //Vorher
+          //oscP5.send(myMessage, myRemoteLocation);          
+
     }
   } 
 } else {
