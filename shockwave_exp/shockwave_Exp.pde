@@ -29,9 +29,9 @@ color c2 = color(25);
 //Color of wave/circle
 int wavecolor = 25;
 
-int dim1 = 2;
-int dim2 = 4;
-int dim3col = 10;
+int dim1 = 1;
+int dim2 = 2;
+int dim3col = 3;
 float speed = 1;
 float volume = 1;
 
@@ -43,7 +43,7 @@ int my = 0;
 int idx = 0;
 
 void setup() {
-  size(700, 400);
+  size(700, 700);
   
   
   /* start oscP5, listening for incoming messages at port 12000 */
@@ -51,7 +51,7 @@ void setup() {
   myRemoteLocation = new NetAddress("127.0.0.1",57110);
   
   // Open the file from the createWriter() example
-  reader = createReader("wine.data"); 
+  reader = createReader("iris.data"); 
 
   do {
     try {
@@ -80,47 +80,43 @@ void setup() {
 
   smooth();
   noStroke();
-  print(mpts.size()+" "+pts.size()+" "+pts.get(0).size());
+  println(mpts.size()+" "+pts.size()+" "+pts.get(0).size());
 }
 
 void draw() {
-  //   println(frameRate);       
+  //  println(frameRate);       
   background(255);
   noStroke();
-  
   for (ArrayList<Float> pt : pts) {
     //    print(10* pt.get(4)+" ");
     /*
     int x = int(100 * pt.get(2));
     int y = int(10 * pt.get(4));
     */
-    
-    int x = int(100 * pt.get(dim1));
-    int y = int(10 * pt.get(dim2));
+    int x = int(pt.get(dim1));
+    int y = int(pt.get(dim2));
     fill(lerpColor(c1, c2, .1 * pt.get(dim3col)));
-    ellipse(x, y, 5, 5);
+    ellipse(x, y, 2, 2);
   }
 if (true) {
   float dt = speed*(millis() - baset);
-
-  // last point in intex
+  // last point in index
   if (dds != null && dt <= 10 * dds.get(mpts.get(mpts.size()-1))+100) {
     // show shockwave
     noFill();
     stroke(wavecolor);
     // ellipse takes diam == 2* distance
     ellipse(mx, my, .2*dt, .2*dt);    
+    
     // get trigger
     for ( ; (idx < mpts.size()-1) && (dt >= 10 * dds.get(mpts.get(idx))) ; idx++) {
           int x = int(100 * pts.get(mpts.get(idx)).get(dim1));
           int y = int(10 * pts.get(mpts.get(idx)).get(dim2));
           fill(lerpColor(c1, c2, .1 * pts.get(mpts.get(idx)).get(dim3col)));
-         
+          
           //explosion
           ellipse(x, y, 10, 10);
           
-          // getting values from dim1 of a datapoint 
-                 //  print(pts.get(dim1)+" "); ??          
           
           //OSC Bundle 
           OscBundle myBundle = new OscBundle();
@@ -129,29 +125,18 @@ if (true) {
          
           // send osc
           OscMessage myMessage = new OscMessage("/s_new");
-          
-          // collaboration with the Grain-Synthdef loaded by SC
-          myMessage.add("grain");
-          myMessage.add(-1); 
-          myMessage.add(0); 
-          myMessage.add(1);
-          myMessage.add("freq"); 
-          myMessage.add(1000); 
-          myMessage.add("sustain"); 
-          myMessage.add(0.01); 
-
-          /* Spring
           myMessage.add("spring");
           myMessage.add(-1); 
           myMessage.add(0); 
-          myMessage.add(1); still dont know the difference, between 0 and 1
-          myMessage.add("springfac");  
+          myMessage.add(1);
+          myMessage.add("springfac"); 
+          
+         // myMessage.add(15000); 
           myMessage.add(1000); 
           myMessage.add("damp"); 
           myMessage.add(0.0007);
           myMessage.add("amp"); 
           myMessage.add(volume);  
-          */
          
           //OSC Bundle 
           myBundle.add(myMessage);
@@ -181,7 +166,7 @@ void mouseClicked() {
   for (ArrayList<Float> pt : pts) {
     float dx = 100 * pt.get(dim1) - mx;
     float dy = 10 * pt.get(dim2) - my;
-    dds.add(sqrt(dx*dx+dy*dy));
+    dds.add(sqrt(dx*dx+dy*dy)); // distance
   }
 
   Collections.sort(mpts, 
