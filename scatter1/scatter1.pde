@@ -1,11 +1,10 @@
 import java.util.*;
 import java.lang.Math;
-/*
+
 import oscP5.*;
- import netP5.*;
- OscP5 oscP5;
- NetAddress myRemoteLocation;
- */
+import netP5.*;
+OscP5 oscP5;
+NetAddress myRemoteLocation;
 
 int diam = 5;
 
@@ -39,10 +38,10 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  /*
+  
   oscP5 = new OscP5(this, 57110);
-   myRemoteLocation = new NetAddress("127.0.0.1", 57110);
-   */
+  myRemoteLocation = new NetAddress("127.0.0.1", 57110);
+
   size(768, 640);
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -156,7 +155,6 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   y+=3;
   xsz-=diam;
   ysz-=diam;
-
   noStroke();
   fill(cols[c]);
   float xmin = mins.get(m);
@@ -167,6 +165,9 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   int xx = int(xxsc * (pt.get(m)-xmin));
   int yy = int(yysc * (pt.get(n)-ymin));
   ellipse(x+xx, y+yy, diam, diam);
+  
+  // sendosctograin(0.2, 600.0, 0.04, 0.0);
+  
 }
 
 void draw() {
@@ -224,7 +225,6 @@ void mouseClicked() {
   int base = millis();
   mx = mouseX;
   my = mouseY;
-
   if (ptsel != null && !ptsel.isEmpty()) {
     if (! brush.removeAll(ptsel)) { // toggle selection
       brush.addAll(ptsel);
@@ -293,3 +293,22 @@ void mouseReleased() {
   drag = false;
 }
 
+void sendosctograin(float amp, float freq, float sstn, float pan) {
+  OscBundle myBundle = new OscBundle();
+  myBundle.setTimetag(myBundle.now());  // and time tag          
+  OscMessage myMessage = new OscMessage("/s_new");         
+  myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
+  myMessage.add(-1); 
+  myMessage.add(0); 
+  myMessage.add(1);
+  myMessage.add("amp"); 
+  myMessage.add(amp);   
+  myMessage.add("freq"); 
+  myMessage.add(freq); 
+  myMessage.add("sustain"); 
+  myMessage.add(sstn); 
+  myMessage.add("pan"); 
+  myMessage.add(pan);  
+  myBundle.add(myMessage); 
+  oscP5.send(myBundle, myRemoteLocation);  
+}
