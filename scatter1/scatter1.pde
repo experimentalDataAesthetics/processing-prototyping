@@ -2,9 +2,9 @@ import java.util.*;
 import java.lang.Math;
 
 import oscP5.*;
-import netP5.*;
-OscP5 oscP5;
-NetAddress myRemoteLocation;
+ import netP5.*;
+ OscP5 oscP5;
+ NetAddress myRemoteLocation;
 
 int diam = 5;
 
@@ -38,10 +38,9 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  
   oscP5 = new OscP5(this, 57110);
-  myRemoteLocation = new NetAddress("127.0.0.1", 57110);
-
+   myRemoteLocation = new NetAddress("127.0.0.1", 57110);
+   
   size(768, 640);
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -155,6 +154,7 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   y+=3;
   xsz-=diam;
   ysz-=diam;
+
   noStroke();
   fill(cols[c]);
   float xmin = mins.get(m);
@@ -165,13 +165,10 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   int xx = int(xxsc * (pt.get(m)-xmin));
   int yy = int(yysc * (pt.get(n)-ymin));
   ellipse(x+xx, y+yy, diam, diam);
-  
-  // sendosctograin(0.2, 600.0, 0.04, 0.0);
-  
 }
 
 void draw() {
-  println(frameRate);
+//  println(frameRate);
   int dt = millis();
   //  background(255);
   for (int i = 0; i < 6; i++) {
@@ -217,6 +214,15 @@ void draw() {
     }
     //    println (ptidx);
   }
+
+  for (int idx : ptnew) {
+    float xx = (pts.get(idx).get(2)-mins.get(2)) / (maxs.get(2)-mins.get(2)); // normalize value
+    sendosctograin((ptnew.size() < 4 ? 0.2 : 0.5/ptnew.size()), 100.*(1.+8*xx), 0.1, 0.0);
+    xx = (pts.get(idx).get(3)-mins.get(3)) / (maxs.get(3)-mins.get(3)); // normalize value
+    sendosctograin((ptnew.size() < 4 ? 0.2 : 0.5/ptnew.size()), 100.*(1.+8*xx), 0.1, 0.0);
+  } 
+  println(ptnew.size());
+
   ptprev = ptsel;
   //  drawscat(2, 4, 0, 256, 256, 256);
 } 
@@ -225,6 +231,7 @@ void mouseClicked() {
   int base = millis();
   mx = mouseX;
   my = mouseY;
+
   if (ptsel != null && !ptsel.isEmpty()) {
     if (! brush.removeAll(ptsel)) { // toggle selection
       brush.addAll(ptsel);
@@ -264,7 +271,8 @@ void mouseDragged() {
         }
       }
       colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
-    } else {
+    } 
+    else {
       // max color under selection
       int[] ccols = new int [cols.length-1]; // initialized to zero?!
       int max = 0;
@@ -278,7 +286,8 @@ void mouseDragged() {
       }
       if (maxidx == 0) {
         colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
-      } else {
+      } 
+      else {
         colx = maxidx;
       }
       brush.addAll(ptsel);
@@ -310,5 +319,6 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myMessage.add("pan"); 
   myMessage.add(pan);  
   myBundle.add(myMessage); 
-  oscP5.send(myBundle, myRemoteLocation);  
+  oscP5.send(myBundle, myRemoteLocation);
 }
+
