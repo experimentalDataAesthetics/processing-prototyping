@@ -2,11 +2,12 @@ import java.util.*;
 import java.lang.Math;
 /*
 import oscP5.*;
-import netP5.*;
-OscP5 oscP5;
-NetAddress myRemoteLocation;
-*/
+ import netP5.*;
+ OscP5 oscP5;
+ NetAddress myRemoteLocation;
+ */
 
+int diam = 5;
 
 BufferedReader reader;
 String line;
@@ -16,8 +17,21 @@ ArrayList<Float> maxs = new ArrayList<Float>();
 
 TreeSet<Integer> brush = new TreeSet<Integer>();
 Boolean drag = false;
-int ptidx = -1;
-
+ArrayList<Integer> ptidx = new ArrayList<Integer>();
+ArrayList<Integer> ptsel = new ArrayList<Integer>();
+ArrayList<Integer> ptprev = new ArrayList<Integer>();
+ArrayList<Integer> ptorder = new ArrayList<Integer>();
+ArrayList<Integer> ptcol = new ArrayList<Integer>();
+color [] cols = new color [] {
+  color(0, 0, 0), 
+  color(255, 0, 0), 
+  color(0, 255, 0), 
+  color(0, 0, 255), 
+  color(255, 0, 255), 
+  color(0, 255, 255), 
+  color(255, 255, 0)
+};
+int colx = cols.length-2;
 
 color c1 = color(255, 0, 0);
 color c2 = color(0, 0, 255);
@@ -27,8 +41,8 @@ int my = 0;
 void setup() {
   /*
   oscP5 = new OscP5(this, 57110);
-  myRemoteLocation = new NetAddress("127.0.0.1", 57110);
-*/
+   myRemoteLocation = new NetAddress("127.0.0.1", 57110);
+   */
   size(768, 640);
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -57,6 +71,8 @@ void setup() {
     maxs.add(val);
   }
   for (ArrayList<Float> pt : pts) {
+    ptorder.add(pts.indexOf(pt)); // not efficient
+    ptcol.add(0); 
     for (int i = 0; i < mins.size(); i++) {
       if (pt.get(i) < mins.get(i)) {
         mins.set(i, pt.get(i));
@@ -66,22 +82,29 @@ void setup() {
       }
     }
   }
-  //  print(pts.size()+" "+pts.get(0).size());
+  background(255);
+  for (int i = 0; i < 6; i++) {
+    for (int k = 0; k < 6; k++) {
+      drawscat(i+1, k+2, i*128, k*106, 128, 106);
+    }
+  }
 }
 
-int closept(int m, int n, int x, int y, int xsz, int ysz) {
+ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
   if (mouseX < x || mouseX > x+xsz || mouseY < y || mouseY > y+ysz) { 
     // outside box
-    return -1;
+    return null;
   } 
   else { 
     // inside box
+    ArrayList<Integer> tmp = new ArrayList<Integer>();
+
     x+=3;
     y+=3;
-    xsz-=5;
-    ysz-=5;
+    xsz-=diam;
+    ysz-=diam;
 
-    float mind = 6.*6./4.;
+    float mind = 4* diam*diam/4.;
     int minidx = -1;
 
     float xmin = mins.get(m);
@@ -93,14 +116,12 @@ int closept(int m, int n, int x, int y, int xsz, int ysz) {
       float yy = yysc * (pt.get(n)-ymin);
       float xd = mouseX - (x+xx);
       float yd = mouseY - (y+yy);
-      float tmp = xd*xd+yd*yd;
-      if (tmp < mind) {
-        mind = tmp;
-        minidx = pts.indexOf(pt);
+      float tmpd = xd*xd+yd*yd;
+      if (tmpd < mind) {
+        tmp.add(pts.indexOf(pt));
       }
     }
-    return minidx;
-    //    return mind > 5.*5./4. ? -1 : minidx;
+    return tmp;
   }
 }
 
@@ -111,31 +132,33 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
 
   x+=3;
   y+=3;
-  xsz-=5;
-  ysz-=5;
+  xsz-=diam;
+  ysz-=diam;
 
   noStroke();
-  fill(0);
   float xmin = mins.get(m);
   float ymin = mins.get(n);
   float xxsc = xsz / (maxs.get(m)-xmin);
   float yysc = ysz / (maxs.get(n)-ymin);
-  for (ArrayList<Float> pt : pts) {
-    int xx = int(xxsc * (pt.get(m)-xmin));
-    int yy = int(yysc * (pt.get(n)-ymin));
-    ellipse(x+xx, y+yy, 5, 5);
+  //  for (ArrayList<Float> pt : pts) {
+  //    int xx = int(xxsc * (pt.get(m)-xmin));
+  //    int yy = int(yysc * (pt.get(n)-ymin));
+  for (Integer pt : ptorder) {
+    fill(cols[ptcol.get(pt)]);
+    int xx = int(xxsc * (pts.get(pt).get(m)-xmin));
+    int yy = int(yysc * (pts.get(pt).get(n)-ymin));
+    ellipse(x+xx, y+yy, diam, diam);
   }
 }
 
-void drawsel(color c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
-
+void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   x+=3;
   y+=3;
-  xsz-=5;
-  ysz-=5;
+  xsz-=diam;
+  ysz-=diam;
 
   noStroke();
-  fill(c);
+  fill(cols[c]);
   float xmin = mins.get(m);
   float ymin = mins.get(n);
   float xxsc = xsz / (maxs.get(m)-xmin);
@@ -143,41 +166,57 @@ void drawsel(color c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   ArrayList<Float> pt = pts.get(idx);
   int xx = int(xxsc * (pt.get(m)-xmin));
   int yy = int(yysc * (pt.get(n)-ymin));
-  ellipse(x+xx, y+yy, 5, 5);
+  ellipse(x+xx, y+yy, diam, diam);
 }
 
 void draw() {
-  //   println(frameRate);
+  println(frameRate);
   int dt = millis();
-  background(255);
-  ptidx = -1;
-  for (int i = 1; i < 9; i++) {
-    for (int k = 2; k < 8; k++) {
-      if (i < k) {
-        drawscat(i, k, (i-1)*128, (k-2)*106, 128, 106);
-        int tmp = closept(i, k, (i-1)*128, (k-2)*106, 128, 106);
-        if (tmp != -1) {
-          ptidx = tmp;
+  //  background(255);
+  for (int i = 0; i < 6; i++) {
+    for (int k = 0; k < 6; k++) {
+      //      drawscat(i+1, k+2, i*128, k*106, 128, 106);
+      ArrayList<Integer> tmp = closept(i+1, k+2, i*128, k*106, 128, 106);
+      if (tmp != null) {
+        ptsel = tmp;
+      }
+    }
+  }
+  ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
+  ptold.removeAll(ptsel);
+  ArrayList<Integer> ptnew = new ArrayList<Integer>(ptsel);
+  ptnew.removeAll(ptprev);
+  for (int i = 0; i < 6; i++) {
+    for (int k = 0; k < 6; k++) {
+      for (int idx : ptold) {
+        if (!brush.contains(idx)) {
+          drawsel(ptcol.get(idx), idx, i+1, k+2, i*128, k*106, 128, 106);
+        }
+      }
+      for (int idx : ptold) {
+        if (brush.contains(idx)) {
+          drawsel(ptcol.get(idx), idx, i+1, k+2, i*128, k*106, 128, 106);
         }
       }
     }
   }
-  if (drag && ptidx != -1) {
-    brush.add(ptidx);
+  if (drag && ptnew != null) {
+    brush.addAll(ptnew);
+    for (int idx : ptnew) {
+      ptcol.set(idx, colx);
+    }
   }
-  for (int i = 1; i < 9; i++) {
-    for (int k = 2; k < 8; k++) {
-      if (i < k) {
-        for (int idx : brush) {
-          drawsel(color(255, 0, 0), idx, i, k, (i-1)*128, (k-2)*106, 128, 106);
-        }
-        if (ptidx != -1) {
-          drawsel(color(255, 255, 0), ptidx, i, k, (i-1)*128, (k-2)*106, 128, 106);
+  for (int i = 0; i < 6; i++) {
+    for (int k = 0; k < 6; k++) {
+      if (ptsel != null) {
+        for (int idx : ptnew) {
+          drawsel(cols.length-1, idx, i+1, k+2, i*128, k*106, 128, 106);
         }
       }
     }
     //    println (ptidx);
   }
+  ptprev = ptsel;
   //  drawscat(2, 4, 0, 256, 256, 256);
 } 
 
@@ -186,22 +225,66 @@ void mouseClicked() {
   mx = mouseX;
   my = mouseY;
 
-  if (ptidx != -1) {
-    if (! brush.remove(ptidx)) { // toggle selection
-      brush.add(ptidx);
+  if (ptsel != null && !ptsel.isEmpty()) {
+    if (! brush.removeAll(ptsel)) { // toggle selection
+      brush.addAll(ptsel);
+      for (int idx : ptsel) { // set all selected points to current color
+        ptcol.set(idx, colx);
+      }
+    } 
+    else {
+      for (int idx : ptsel) { // set all selected points to clear
+        ptcol.set(idx, 0);
+      }
     }
   } 
   else {
-    //brush.clear();
+    background(255);
+    brush.clear();
+    colx = 1;
+    for (int idx : ptorder) { // set all points to clear
+      ptcol.set(idx, 0);
+    }
+    for (int i = 0; i < 6; i++) {
+      for (int k = 0; k < 6; k++) {
+        drawscat(i+1, k+2, i*128, k*106, 128, 106);
+      }
+    }
   }
 }
 
 void mouseDragged() {  
-  if (!drag) {
-    brush.clear();
+  if (!drag) { // start new drag
     drag = true;
-    if (ptidx != -1) {
-      brush.add(ptidx);
+    if (ptsel == null || ptsel.isEmpty()) {
+      background(255);
+      for (int i = 0; i < 6; i++) {
+        for (int k = 0; k < 6; k++) {
+          drawscat(i+1, k+2, i*128, k*106, 128, 106);
+        }
+      }
+      colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+    } else {
+      // max color under selection
+      int[] ccols = new int [cols.length-1]; // initialized to zero?!
+      int max = 0;
+      int maxidx = 0;
+      for (int idx : ptsel) {
+        ccols[ptcol.get(idx)] += 1;
+        if (ccols[ptcol.get(idx)] > max) {
+          maxidx = ptcol.get(idx);
+          max = ccols[maxidx];
+        }
+      }
+      if (maxidx == 0) {
+        colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+      } else {
+        colx = maxidx;
+      }
+      brush.addAll(ptsel);
+      for (int idx : ptsel) { // set selected points to new brush
+        ptcol.set(idx, colx);
+      }
     }
   }
 }
