@@ -216,10 +216,14 @@ void draw() {
   }
 
   for (int idx : ptnew) {
-    float xx = (pts.get(idx).get(2)-mins.get(2)) / (maxs.get(2)-mins.get(2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.2 : 0.5/ptnew.size()), 100.*(1.+8*xx), 0.1, 0.0);
-    xx = (pts.get(idx).get(3)-mins.get(3)) / (maxs.get(3)-mins.get(3)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.2 : 0.5/ptnew.size()), 100.*(1.+8*xx), 0.1, 0.0);
+    int x1 = 5;
+    int x2 = 6;
+    float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
+    float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
+    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), 440.*pow(2.,xx), 0.02, 0.0);
+    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), 1320.*pow(2.,yy), 0.02, 0.0);
+   // xx = (pts.get(idx).get(3)-mins.get(3)) / (maxs.get(3)-mins.get(3)); // normalize value
+   // sendosctograin((ptnew.size() < 4 ? 0.2 : 0.5/ptnew.size()), 100.*(1.+8*xx), 0.1, 0.0);
   } 
   println(ptnew.size());
 
