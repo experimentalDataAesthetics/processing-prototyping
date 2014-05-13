@@ -6,6 +6,9 @@ ControlP5 cp5;
 
 float grainsustain = 0.04;
 float panning = 0.0;
+float freqA = 880.0;
+float freqB = 3520.0;
+
 
 import oscP5.*;
 import netP5.*;
@@ -44,17 +47,17 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  size(1000, 640);
+  size(1050, 640);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
-  
+
   cp5 = new ControlP5(this); 
   Group g1 = cp5.addGroup("g1")
                 .setPosition(780,10)
-                .setWidth(200)
+                .setWidth(250)
                 .activateEvent(true)
                 .setBackgroundColor(color(10, 10, 10))
-                .setBackgroundHeight(80)
+                .setBackgroundHeight(400)
                 .setLabel("GUI")
                 ;
   
@@ -75,6 +78,8 @@ void setup() {
      .setGroup(g1)
      .setLabel("Panning")
      ;
+                
+                          
    
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -254,8 +259,8 @@ void draw() {
     int x2 = 6;
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), 1046.5*pow(2.,xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), 2093.*pow(2.,yy), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), freqA*pow(2.,xx), grainsustain, panning/100);
+    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), freqB*pow(2.,yy), grainsustain, -1.0*(panning/100));
     
   } 
   // println(ptnew.size());
@@ -361,24 +366,53 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
 
 void slider1(float slidervalue1) {
   grainsustain = slidervalue1/1000.0;
-  println("a numberbox event. setting grain sustain to "+slidervalue1);
+  //println("a numberbox event. setting grain sustain to "+slidervalue1);
 }
 
 void slider2(float slidervalue2) {
   panning = slidervalue2;
-  println("a numberbox event. setting grain sustain to "+slidervalue2);
+  //println("a numberbox event. setting grain sustain to "+slidervalue2);
 }
 
-void controlEvent(ControlEvent theEvent) {
-  if(theEvent.isGroup()) {
-    println("got an event from group "
-            +theEvent.getGroup().getName()
-            +", isOpen? "+theEvent.getGroup().isOpen()
-            );
-            
-  } else if (theEvent.isController()){
-    println("got something from a controller "
-            +theEvent.getController().getName()
-            );
+void keyPressed()
+{
+  switch (key) {
+    case 'a':
+      freqA = 220.0;
+      break;
+    case 's':
+      freqA = 440.0;
+      break; 
+    case 'd':
+      freqA = 880.0;
+      break;
+    case 'f':
+      freqA = 1760.0;
+      break; 
+    case 'g':
+      freqA = 3520.0;
+      break;   
+    case 'q':
+      freqB = 220.0;
+      break;
+    case 'w':
+      freqB = 440.0;
+      break; 
+    case 'e':
+      freqB = 880.0;
+      break;
+    case 'r':
+      freqB = 1760.0;
+      break; 
+    case 't':
+      freqB = 3520.0;
+      break;    
+    case ' ':
+      freqA = 880.0;
+      freqB = 3520.0;
+      break;   
+      
+    default: 
+      break;
   }
 }
