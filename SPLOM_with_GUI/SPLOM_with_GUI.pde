@@ -56,8 +56,8 @@ void setup() {
                 .setPosition(780,10)
                 .setWidth(250)
                 .activateEvent(true)
-                .setBackgroundColor(color(10, 10, 10))
-                .setBackgroundHeight(400)
+                .setBackgroundColor(color(180))
+                .setBackgroundHeight(100)
                 .setLabel("GUI")
                 ;
   
@@ -74,7 +74,7 @@ void setup() {
      .setPosition(10,30)
      .setRange(0.0, 100.0)
      .setSize(90,14)
-     .setValue(0.0)
+     .setValue(100.0)
      .setGroup(g1)
      .setLabel("Panning")
      ;
