@@ -348,7 +348,8 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
-  myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
+  //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
+  myMessage.add("grain2"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
