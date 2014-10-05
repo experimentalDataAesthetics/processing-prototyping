@@ -259,8 +259,8 @@ void draw() {
     int x2 = 6;
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), freqA*pow(2.,xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.3 : 0.95/ptnew.size()), freqB*pow(2.,yy), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.,xx), grainsustain, panning/100);
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.,yy), grainsustain, -1.0*(panning/100));
     
   } 
   // println(ptnew.size());
