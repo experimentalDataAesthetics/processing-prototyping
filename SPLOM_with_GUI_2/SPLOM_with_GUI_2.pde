@@ -6,9 +6,8 @@ ControlP5 cp5;
 
 float grainsustain = 0.04;
 float panning = 0.0;
-float freqA = 880.0;
-float freqB = 3520.0;
-
+float freqA = 440.0;
+float freqB = 880.0;
 
 import oscP5.*;
 import netP5.*;
@@ -302,8 +301,8 @@ void draw() {
     int x2 = selcdim2; //6
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.,xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.,yy), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,xx), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,yy), grainsustain, panning/100);
     
   } 
   // println(ptnew.size());
@@ -392,7 +391,7 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
   //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
-  myMessage.add("grain2"); 
+  myMessage.add("grain3"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
