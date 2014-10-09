@@ -4,7 +4,7 @@ import java.lang.Math;
 import controlP5.*;
 ControlP5 cp5;
 
-float grainsustain = 0.04;
+float grainsustain = 0.005;
 float panning = 0.0;
 float freqA = 440.0;
 float freqB = 880.0;
@@ -69,9 +69,9 @@ void setup() {
   
   cp5.addSlider("slider1")
      .setPosition(10,10)
-     .setRange(10.0, 500.0)
+     .setRange(1.0, 500.0)
      .setSize(90,14)
-     .setValue(40.0)
+     .setValue(5.0)
      .setGroup(g1)
      .setLabel("Sustain")
      ;
