@@ -35,8 +35,18 @@ SynthDef("grain2", { |out, amp=0.1, freq=440, sustain=0.01, pan|
 SynthDef("grain3", { |out, amp=0.1, freq=440, sustain=0.01, pan|
 	var snd = LFSaw.ar(freq)*0.3*AmpCompA.kr(freq);
 	//Basic psychoacoustic amplitude compensation (ANSI A-weighting curve).
-	var amp2 = amp * AmpComp.ir(freq.max(50)) * 0.5;
+	var amp2 = amp * AmpComp.ir(freq.max(50)) * 0.1;
 	var env = EnvGen.ar(Env.perc(sustain, 0.09), doneAction: 2);
 	OffsetOut.ar(out, Pan2.ar(snd * env, pan));
+}, \ir ! 5).add;
+)
+
+(
+SynthDef("grain4", { |out=0.0, amp=0.1, freq=440, sustain=0.01 |
+	var snd = LFSaw.ar(freq)*0.3*AmpCompA.kr(freq);
+	//Basic psychoacoustic amplitude compensation (ANSI A-weighting curve).
+	var amp2 = amp * AmpComp.ir(freq.max(50)) * 0.1;
+	var env = EnvGen.ar(Env.perc(sustain, 0.09), doneAction: 2);
+	OffsetOut.ar(out, snd * env);
 }, \ir ! 5).add;
 )

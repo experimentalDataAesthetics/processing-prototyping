@@ -6,8 +6,11 @@ ControlP5 cp5;
 
 float grainsustain = 0.005;
 float panning = 0.0;
-float freqA = 440.0;
-float freqB = 880.0;
+float freqA = 200.0;
+float freqB = 800.0;
+float freqC = 1500.0;
+float freqD = 2000.0;
+
 
 import oscP5.*;
 import netP5.*;
@@ -299,10 +302,18 @@ void draw() {
   for (int idx : ptnew) {
     int x1 = selcdim1; //5
     int x2 = selcdim2; //6
-    float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
-    float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,xx), grainsustain, -1.0*(panning/100));
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,yy), grainsustain, panning/100);
+    float xx1 = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
+    float yy1 = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,2*xx1), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,2*yy1), grainsustain, panning/100);
+    
+    int x1b = 7; //5
+    int x2b = 8; //6
+    float xx2 = (pts.get(idx).get(x1b)-mins.get(x1b)) / (maxs.get(x1b)-mins.get(x1b)); // normalize value
+    float yy2 = (pts.get(idx).get(x2b)-mins.get(x2b)) / (maxs.get(x2b)-mins.get(x2b)); // normalize value
+    sendosctograin2((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqC*pow(2.0,2*xx2), grainsustain, 2);
+    sendosctograin2((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqD*pow(2.0,2*yy2), grainsustain, 3);
+      
     
   } 
   // println(ptnew.size());
@@ -406,6 +417,27 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myBundle.add(myMessage); 
   oscP5.send(myBundle, myRemoteLocation);
 }
+
+void sendosctograin2(float amp, float freq, float sstn, int out) {
+  OscBundle myBundle = new OscBundle();
+  myBundle.setTimetag(myBundle.now());  // and time tag          
+  OscMessage myMessage = new OscMessage("/s_new");         
+  myMessage.add("grain4"); 
+  myMessage.add(-1); 
+  myMessage.add(0); 
+  myMessage.add(1);
+  myMessage.add("out"); 
+  myMessage.add(out); 
+  myMessage.add("amp"); 
+  myMessage.add(amp);   
+  myMessage.add("freq"); 
+  myMessage.add(freq); 
+  myMessage.add("sustain"); 
+  myMessage.add(sstn); 
+  myBundle.add(myMessage); 
+  oscP5.send(myBundle, myRemoteLocation);
+}
+
 
 void slider1(float slidervalue1) {
   grainsustain = slidervalue1/1000.0;
