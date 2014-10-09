@@ -15,11 +15,14 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 5; // ??
+int diam = 3; // size(diameter) of datapoints
 int ndm = 12; // number of "dimensions"
 
-int selcdim1 = 5;
-int selcdim2 = 6;
+int selcdim1 = 5; // selected dimension A
+int selcdim2 = 6; // selected dimension B
+
+int shiftd = -2; //shifting the dimensions??
+int shiftdd = 3; //shifting the dimensions??
 
 BufferedReader reader;
 String line;
@@ -43,7 +46,7 @@ color [] cols = new color [] {
   color(0, 255, 255), 
   color(255, 255, 0)
 };
-int colx = cols.length-2;
+int colx = cols.length-shiftd;
 
 color c1 = color(255, 0, 0);
 color c2 = color(0, 0, 255);
@@ -83,21 +86,21 @@ void setup() {
      .setLabel("Panning")
      ;
      
- cp5.addRadioButton("radio")
+ cp5.addRadioButton("radio1")
      .setPosition(10,50)
      .setSize(20,9)
-     .addItem("X1",0)
-     .addItem("X2",1)
-     .addItem("X3",2)
-     .addItem("X4",3)
-     .addItem("X5",4)
-     .addItem("X6",0)
-     .addItem("X7",1)
-     .addItem("X8",2)
-     .addItem("X9",3)
-     .addItem("X10",4)
-     .addItem("X11",0)
-     .addItem("X12",1)
+     .addItem("X1",1)
+     .addItem("X2",2)
+     .addItem("X3",3)
+     .addItem("X4",4)
+     .addItem("X5",5)
+     .addItem("X6",6)
+     .addItem("X7",7)
+     .addItem("X8",8)
+     .addItem("X9",9)
+     .addItem("X10",10)
+     .addItem("X11",11)
+     .addItem("X12",12)
      .setGroup(g1)
      .setLabel("DimensionX")
      ;    
@@ -105,17 +108,18 @@ void setup() {
    cp5.addRadioButton("radio2")
      .setPosition(10,200)
      .setSize(20,9)
-     .addItem("Y2",1)
-     .addItem("Y3",2)
-     .addItem("Y4",3)
-     .addItem("Y5",4)
-     .addItem("Y6",0)
-     .addItem("Y7",1)
-     .addItem("Y8",2)
-     .addItem("Y9",3)
-     .addItem("Y10",4)
-     .addItem("Y11",0)
-     .addItem("Y12",1)
+     .addItem("Y1",1)
+     .addItem("Y2",2)
+     .addItem("Y3",3)
+     .addItem("Y4",4)
+     .addItem("Y5",5)
+     .addItem("Y6",6)
+     .addItem("Y7",7)
+     .addItem("Y8",8)
+     .addItem("Y9",9)
+     .addItem("Y10",10)
+     .addItem("Y11",11)
+     .addItem("Y12",12)
      .setGroup(g1)
      .setLabel("DimensionY")
      ;                        
@@ -175,8 +179,8 @@ ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
     // inside box
     ArrayList<Integer> tmp = new ArrayList<Integer>();
 
-    x+=3;
-    y+=3;
+    x+=shiftdd;
+    y+=shiftdd;
     xsz-=diam;
     ysz-=diam;
 
@@ -206,8 +210,8 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
   noFill();
   rect(x, y, xsz, ysz);
 
-  x+=3; 
-  y+=3;
+  x+=shiftdd; 
+  y+=shiftdd;
   xsz-=diam;
   ysz-=diam;
 
@@ -228,8 +232,8 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
 }
 
 void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
-  x+=3;
-  y+=3;
+  x+=shiftdd;
+  y+=shiftdd;
   xsz-=diam;
   ysz-=diam;
 
@@ -351,7 +355,7 @@ void mouseDragged() {
           drawscat(i+1, k+2, i*128, k*106, 128, 106);
         }
       }
-      colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+      colx = colx+1 > cols.length-shiftd ? 1 : colx+1; // next color without brush
     } 
     else {
       // max color under selection
@@ -366,7 +370,7 @@ void mouseDragged() {
         }
       }
       if (maxidx == 0) {
-        colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+        colx = colx+1 > cols.length-shiftd ? 1 : colx+1; // next color without brush
       } 
       else {
         colx = maxidx;
@@ -412,6 +416,14 @@ void slider1(float slidervalue1) {
 void slider2(float slidervalue2) {
   panning = slidervalue2;
   //println("a numberbox event. setting grain sustain to "+slidervalue2);
+}
+
+void radio1(int radiovalue1) {
+  selcdim1 = radiovalue1;
+}
+
+void radio2(int radiovalue2) {
+  selcdim2 = radiovalue2;
 }
 
 void keyPressed()
