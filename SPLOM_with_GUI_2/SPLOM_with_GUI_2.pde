@@ -6,10 +6,10 @@ ControlP5 cp5;
 
 float grainsustain = 0.005;
 float panning = 0.0;
-float freqA = 200.0;
-float freqB = 800.0;
-float freqC = 1500.0;
-float freqD = 2000.0;
+float freqA = 400.0;
+float freqB = 1200.0;
+float freqC = 400.0;
+float freqD = 1200.0;
 
 
 import oscP5.*;
@@ -17,11 +17,13 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 4; // size(diameter) of datapoints
+int diam = 8; // size(diameter) of datapoints
 int ndm = 10; // number of "dimensions"
 
-int selcdim1 = 5; // selected dimension A
-int selcdim2 = 6; // selected dimension B
+int selcdim1 = 7; // selected dimension A
+int selcdim2 = 8; // selected dimension B
+int selcdim3 = 5;
+int selcdim4 = 6;
 
 int shiftd = -2; //shifting the dimensions??
 int shiftdd = 3; //shifting the dimensions??
@@ -304,11 +306,13 @@ void draw() {
     int x2 = selcdim2; //6
     float xx1 = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy1 = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,2*xx1), grainsustain, -1.0*(panning/100));
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,2*yy1), grainsustain, panning/100);
+  //  sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,2*xx1), grainsustain, -1.0*(panning/100));
+  //  sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,2*yy1), grainsustain, panning/100); 
+    sendosctograin2((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.0,2*xx1), grainsustain, 0);
+    sendosctograin2((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.0,2*yy1), grainsustain, 1);
     
-    int x1b = 7; //5
-    int x2b = 8; //6
+    int x1b = selcdim3; //5
+    int x2b = selcdim4; //6
     float xx2 = (pts.get(idx).get(x1b)-mins.get(x1b)) / (maxs.get(x1b)-mins.get(x1b)); // normalize value
     float yy2 = (pts.get(idx).get(x2b)-mins.get(x2b)) / (maxs.get(x2b)-mins.get(x2b)); // normalize value
     sendosctograin2((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqC*pow(2.0,2*xx2), grainsustain, 2);
