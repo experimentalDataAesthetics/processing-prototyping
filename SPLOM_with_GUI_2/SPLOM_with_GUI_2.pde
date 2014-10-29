@@ -17,8 +17,8 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 8; // size(diameter) of datapoints
-int ndm = 10; // number of "dimensions"
+int diam = 5; // size(diameter) of datapoints
+int ndm = 12; // number of "dimensions"
 
 int selcdim1 = 7; // selected dimension A
 int selcdim2 = 8; // selected dimension B
