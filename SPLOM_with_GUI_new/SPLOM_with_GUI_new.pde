@@ -17,13 +17,19 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 4; // point size
+int diam = 5; // point size
 int boxwidth = 100;  // width of grid
 int boxheight = 100; // height of grid
-int[] xidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // map grid (left-right) to coordinate
-//int[] yidx = {2,3,4,5,6,7,8}; // map grid (top-down) to coordinate
-int[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to coordinate
+Integer[] xidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // map grid (left-right) to dim
+Integer[] yidx = {0,1,2,3,4,5,6,7}; // map grid (top-down) to dim
+//Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
+boolean record = false;
+boolean clear = false;
+int play = -1; // play stopped
+boolean pause = false;
+ArrayList<Integer> mouseXs = new ArrayList<Integer>();
+ArrayList<Integer> mouseYs = new ArrayList<Integer>();
 
 BufferedReader reader;
 String line;
@@ -209,6 +215,7 @@ void drawbox(int c, int m, int n, int xsz, int ysz) {
 }
 
 int pm = 0; int pn = 0;
+
 void draw() {
   int dt = millis();
   //  background(255);
@@ -216,11 +223,33 @@ void draw() {
   if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
     if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
       drawbox(0, pm, pn, boxwidth, boxheight);
+      drawbox(0, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       pm = mouseX / boxwidth;
       pn = mouseY / boxheight;
       drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
     }
-    ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight);
+    
+    if (play > -1) {
+      ptsel = closept(xidx[mouseXs.get(play) / boxwidth], yidx[mouseYs.get(play) / boxheight], mouseXs.get(play) % boxwidth, mouseYs.get(play) % boxheight, boxwidth, boxheight);
+      if (!pause) {
+        play++;
+        if (play >= mouseXs.size()) {
+          play = -1; // play stopped
+        }        
+      }
+    } else {
+      if (record) {
+        if (clear) {
+          mouseXs.clear();
+          mouseYs.clear();
+          clear = false;
+        }
+        mouseXs.add(mouseX);
+        mouseYs.add(mouseY);
+      }
+      ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight);
+    }
   }
   ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
   ptold.removeAll(ptsel);
@@ -288,7 +317,13 @@ void mouseClicked() {
   }
 }
 
+void mouseMoved() {
+  play = -1;
+}
+
 void mouseDragged() {  
+  play = -1;
+
   if (!drag) { // start new drag
     drag = true;
     if (ptsel.isEmpty()) {
@@ -361,12 +396,14 @@ void keyPressed()
   case 'a':
     freqA = 220.0;
     break;
-  case 's':
+/*  case 's':
     freqA = 440.0;
     break; 
+    
   case 'd':
     freqA = 880.0;
     break;
+    */
   case 'f':
     freqA = 1760.0;
     break; 
@@ -391,6 +428,38 @@ void keyPressed()
   case ' ':
     freqA = 880.0;
     freqB = 3520.0;
+    break;   
+
+  case 's':
+    play = -1;
+    if (record) {
+      record = false;
+    println("stop");
+    } else {
+      record = true;
+      clear = true;
+    println("record");
+    }
+    break;
+    
+  case 'd':
+    if (record) {
+      record = false;       
+      println("stop");
+    }
+    if (play == -1) {
+      if (!mouseXs.isEmpty()) {
+        play = 0;
+        pause = false;
+        println("play");
+      }
+    } else if (pause) {
+      pause = false;
+      println("play");
+    } else {
+      pause = true;
+      println("pause");
+    } 
     break;   
 
   default: 
