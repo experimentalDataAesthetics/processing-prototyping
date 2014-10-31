@@ -21,7 +21,7 @@ int diam = 5; // point size
 int boxwidth = 100;  // width of grid
 int boxheight = 100; // height of grid
 Integer[] xidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // map grid (left-right) to dim
-Integer[] yidx = {0,1,2,3,4,5,6,7}; // map grid (top-down) to dim
+Integer[] yidx = {0, 1, 2, 3, 4, 5, 6, 7}; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
 boolean record = false;
@@ -30,6 +30,9 @@ int play = -1; // play stopped
 boolean pause = false;
 ArrayList<Integer> mouseXs = new ArrayList<Integer>();
 ArrayList<Integer> mouseYs = new ArrayList<Integer>();
+
+float mxd = diam;
+float myd = diam;
 
 BufferedReader reader;
 String line;
@@ -45,7 +48,9 @@ ArrayList<Integer> ptprev = new ArrayList<Integer>();
 ArrayList<Integer> ptorder = new ArrayList<Integer>();
 ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
-color[] cols = new color [] {color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)};
+color[] cols = new color [] {
+  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+};
 int colx = cols.length-2;
 
 int mx = 0;
@@ -57,34 +62,15 @@ void setup() {
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1")
-    .setPosition(780, 10)
-      .setWidth(250)
-        .activateEvent(true)
-          .setBackgroundColor(color(180))
-            .setBackgroundHeight(100)
-              .setLabel("GUI")
-                ;
+  Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
+    .setBackgroundColor(color(180)).setBackgroundHeight(100).setLabel("GUI");
 
-  cp5.addSlider("slider1")
-    .setPosition(10, 10)
-      .setRange(10.0, 500.0)
-        .setSize(90, 14)
-          .setValue(40.0)
-            .setGroup(g1)
-              .setLabel("Sustain")
-                ;
+  cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
 
-  cp5.addSlider("slider2")
-    .setPosition(10, 30)
-      .setRange(0.0, 100.0)
-        .setSize(90, 14)
-          .setValue(100.0)
-            .setGroup(g1)
-              .setLabel("Panning")
-                ;
+  cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("Panning");
 
-
+  cp5.addSlider("slider3").setPosition(10, 60).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushwidth");
+  cp5.addSlider("slider4").setPosition(10, 80).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushheight");
 
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -125,6 +111,27 @@ void setup() {
   }
   background(255);
   drawscat(boxwidth, boxheight);
+}
+
+ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz, float mxd, float myd) {
+  ArrayList<Integer> tmp = new ArrayList<Integer>();
+  xsz-=diam;
+  ysz-=diam;
+
+  float xmin = mins.get(m);
+  float ymin = mins.get(n);
+  float xxsc = xsz / (maxs.get(m)-xmin);
+  float yysc = ysz / (maxs.get(n)-ymin);
+  for (ArrayList<Float> pt : pts) {
+    float xx = xxsc * (pt.get(m)-xmin);
+    float yy = ysz - yysc * (pt.get(n)-ymin); // flip y coord
+    float xd = abs(x - (xx+diam/2));
+    float yd = abs(y - (yy+diam/2));
+    if (xd < mxd && yd < myd) {
+      tmp.add(pts.indexOf(pt));
+    }
+  }
+  return tmp;
 }
 
 ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
@@ -214,7 +221,8 @@ void drawbox(int c, int m, int n, int xsz, int ysz) {
   }
 }
 
-int pm = 0; int pn = 0;
+int pm = 0; 
+int pn = 0;
 
 void draw() {
   int dt = millis();
@@ -229,26 +237,28 @@ void draw() {
       drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
       drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
     }
-    
-    if (play > -1) {
-      ptsel = closept(xidx[mouseXs.get(play) / boxwidth], yidx[mouseYs.get(play) / boxheight], mouseXs.get(play) % boxwidth, mouseYs.get(play) % boxheight, boxwidth, boxheight);
-      if (!pause) {
-        play++;
-        if (play >= mouseXs.size()) {
-          play = -1; // play stopped
-        }        
+  }
+
+  if (play > -1) {
+    ptsel = closept(xidx[mouseXs.get(play) / boxwidth], yidx[mouseYs.get(play) / boxheight], mouseXs.get(play) % boxwidth, mouseYs.get(play) % boxheight, boxwidth, boxheight, mxd, myd);
+    if (!pause) {
+      play++;
+      if (play >= mouseXs.size()) {
+        play = -1; // play stopped
       }
-    } else {
-      if (record) {
-        if (clear) {
-          mouseXs.clear();
-          mouseYs.clear();
-          clear = false;
-        }
-        mouseXs.add(mouseX);
-        mouseYs.add(mouseY);
+    }
+  } else {
+    if (record) {
+      if (clear) {
+        mouseXs.clear();
+        mouseYs.clear();
+        clear = false;
       }
-      ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight);
+      mouseXs.add(mouseX);
+      mouseYs.add(mouseY);
+    }
+    if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
+      ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight, mxd, myd);
     }
   }
   ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
@@ -314,6 +324,10 @@ void mouseClicked() {
       ptcol.set(idx, 0);
     }
     drawscat(boxwidth, boxheight);
+    pm = min(mouseX / boxwidth, xidx.length-1);
+    pn = min(mouseY / boxheight, yidx.length-1);
+    drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+    drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
   }
 }
 
@@ -329,6 +343,11 @@ void mouseDragged() {
     if (ptsel.isEmpty()) {
       background(255);
       drawscat(boxwidth, boxheight);
+      pm = min(mouseX / boxwidth, xidx.length-1);
+      pn = min(mouseY / boxheight, yidx.length-1);
+      drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+
       colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
@@ -390,20 +409,27 @@ void slider2(float slidervalue2) {
   //println("a numberbox event. setting grain sustain to "+slidervalue2);
 }
 
+void slider3(float slidervalue3) {
+  mxd = slidervalue3 * boxwidth/2;
+}
+void slider4(float slidervalue4) {
+  myd = slidervalue4 * boxwidth/2;
+}
+
 void keyPressed()
 {
   switch (key) {
   case 'a':
     freqA = 220.0;
     break;
-/*  case 's':
-    freqA = 440.0;
-    break; 
-    
-  case 'd':
-    freqA = 880.0;
-    break;
-    */
+    /*  case 's':
+     freqA = 440.0;
+     break; 
+     
+     case 'd':
+     freqA = 880.0;
+     break;
+     */
   case 'f':
     freqA = 1760.0;
     break; 
@@ -434,14 +460,14 @@ void keyPressed()
     play = -1;
     if (record) {
       record = false;
-    println("stop");
+      println("stop");
     } else {
       record = true;
       clear = true;
-    println("record");
+      println("record");
     }
     break;
-    
+
   case 'd':
     if (record) {
       record = false;       
