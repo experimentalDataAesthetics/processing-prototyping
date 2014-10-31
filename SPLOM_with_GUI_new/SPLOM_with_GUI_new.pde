@@ -1,6 +1,8 @@
+import oscP5.*;
+import netP5.*;
+
 import java.util.*;
 import java.lang.Math;
-
 import controlP5.*;
 ControlP5 cp5;
 
@@ -15,7 +17,13 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 5;
+int diam = 4; // point size
+int boxwidth = 100;  // width of grid
+int boxheight = 100; // height of grid
+int[] xidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // map grid (left-right) to coordinate
+//int[] yidx = {2,3,4,5,6,7,8}; // map grid (top-down) to coordinate
+int[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to coordinate
+
 
 BufferedReader reader;
 String line;
@@ -30,19 +38,10 @@ ArrayList<Integer> ptsel = new ArrayList<Integer>();
 ArrayList<Integer> ptprev = new ArrayList<Integer>();
 ArrayList<Integer> ptorder = new ArrayList<Integer>();
 ArrayList<Integer> ptcol = new ArrayList<Integer>();
-color [] cols = new color [] {
-  color(0, 0, 0), 
-  color(255, 0, 0), 
-  color(0, 255, 0), 
-  color(0, 0, 255), 
-  color(255, 0, 255), 
-  color(0, 255, 255), 
-  color(255, 255, 0)
-};
+
+color[] cols = new color [] {color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)};
 int colx = cols.length-2;
 
-color c1 = color(255, 0, 0);
-color c2 = color(0, 0, 255);
 int mx = 0;
 int my = 0;
 
@@ -53,34 +52,34 @@ void setup() {
 
   cp5 = new ControlP5(this); 
   Group g1 = cp5.addGroup("g1")
-                .setPosition(780,10)
-                .setWidth(250)
-                .activateEvent(true)
-                .setBackgroundColor(color(180))
-                .setBackgroundHeight(100)
-                .setLabel("GUI")
+    .setPosition(780, 10)
+      .setWidth(250)
+        .activateEvent(true)
+          .setBackgroundColor(color(180))
+            .setBackgroundHeight(100)
+              .setLabel("GUI")
                 ;
-  
+
   cp5.addSlider("slider1")
-     .setPosition(10,10)
-     .setRange(10.0, 500.0)
-     .setSize(90,14)
-     .setValue(40.0)
-     .setGroup(g1)
-     .setLabel("Sustain")
-     ;
-     
+    .setPosition(10, 10)
+      .setRange(10.0, 500.0)
+        .setSize(90, 14)
+          .setValue(40.0)
+            .setGroup(g1)
+              .setLabel("Sustain")
+                ;
+
   cp5.addSlider("slider2")
-     .setPosition(10,30)
-     .setRange(0.0, 100.0)
-     .setSize(90,14)
-     .setValue(100.0)
-     .setGroup(g1)
-     .setLabel("Panning")
-     ;
-                
-                          
-   
+    .setPosition(10, 30)
+      .setRange(0.0, 100.0)
+        .setSize(90, 14)
+          .setValue(100.0)
+            .setGroup(g1)
+              .setLabel("Panning")
+                ;
+
+
+
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
   do {
@@ -110,55 +109,46 @@ void setup() {
   for (ArrayList<Float> pt : pts) {
     ptorder.add(pts.indexOf(pt)); // not efficient
     ptcol.add(0); 
-    for (int i = 0; i < mins.size(); i++) {
+    for (int i = 0; i < mins.size (); i++) {
       if (pt.get(i) < mins.get(i)) {
         mins.set(i, pt.get(i));
-      } 
-      else if (pt.get(i) > maxs.get(i)) {
+      } else if (pt.get(i) > maxs.get(i)) {
         maxs.set(i, pt.get(i));
       }
     }
   }
   background(255);
-  for (int i = 0; i < 6; i++) {
-    for (int k = 0; k < 6; k++) {
-      drawscat(i+1, k+2, i*128, k*106, 128, 106);
-    }
-  }
+  drawscat(boxwidth, boxheight);
 }
 
 ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
-  if (mouseX < x || mouseX > x+xsz || mouseY < y || mouseY > y+ysz) { 
-    // outside box
-    return null;
-  } 
-  else { 
-    // inside box
-    ArrayList<Integer> tmp = new ArrayList<Integer>();
+  ArrayList<Integer> tmp = new ArrayList<Integer>();
+  float mind = 4* diam*diam/4.;
+  xsz-=diam;
+  ysz-=diam;
 
-    x+=3;
-    y+=3;
-    xsz-=diam;
-    ysz-=diam;
-
-    float mind = 4* diam*diam/4.;
-    int minidx = -1;
-
-    float xmin = mins.get(m);
-    float ymin = mins.get(n);
-    float xxsc = xsz / (maxs.get(m)-xmin);
-    float yysc = ysz / (maxs.get(n)-ymin);
-    for (ArrayList<Float> pt : pts) {
-      float xx = xxsc * (pt.get(m)-xmin);
-      float yy = yysc * (pt.get(n)-ymin);
-      float xd = mouseX - (x+xx);
-      float yd = mouseY - (y+yy);
-      float tmpd = xd*xd+yd*yd;
-      if (tmpd < mind) {
-        tmp.add(pts.indexOf(pt));
-      }
+  float xmin = mins.get(m);
+  float ymin = mins.get(n);
+  float xxsc = xsz / (maxs.get(m)-xmin);
+  float yysc = ysz / (maxs.get(n)-ymin);
+  for (ArrayList<Float> pt : pts) {
+    float xx = xxsc * (pt.get(m)-xmin);
+    float yy = ysz - yysc * (pt.get(n)-ymin); // flip y coord
+    float xd = x - (xx+diam/2);
+    float yd = y - (yy+diam/2);
+    float tmpd = xd*xd+yd*yd;
+    if (tmpd < mind) {
+      tmp.add(pts.indexOf(pt));
     }
-    return tmp;
+  }
+  return tmp;
+}
+
+void drawscat(int xsz, int ysz) {
+  for (int i = 0; i < xidx.length; i++) {
+    for (int k = 0; k < yidx.length; k++) {
+      drawscat(xidx[i], yidx[k], i*xsz, k*ysz, xsz, ysz);
+    }
   }
 }
 
@@ -166,9 +156,6 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
   stroke(128);
   noFill();
   rect(x, y, xsz, ysz);
-
-  x+=3;
-  y+=3;
   xsz-=diam;
   ysz-=diam;
 
@@ -177,20 +164,23 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
   float ymin = mins.get(n);
   float xxsc = xsz / (maxs.get(m)-xmin);
   float yysc = ysz / (maxs.get(n)-ymin);
-  //  for (ArrayList<Float> pt : pts) {
-  //    int xx = int(xxsc * (pt.get(m)-xmin));
-  //    int yy = int(yysc * (pt.get(n)-ymin));
   for (Integer pt : ptorder) {
     fill(cols[ptcol.get(pt)]);
     int xx = int(xxsc * (pts.get(pt).get(m)-xmin));
-    int yy = int(yysc * (pts.get(pt).get(n)-ymin));
-    ellipse(x+xx, y+yy, diam, diam);
+    int yy = ysz - int(yysc * (pts.get(pt).get(n)-ymin)); // flip y coord
+    ellipse(x+xx+diam/2, y+yy+diam/2, diam, diam);
+  }
+}
+
+void drawsel(int c, int idx, int xsz, int ysz) {
+  for (int i = 0; i < xidx.length; i++) {
+    for (int k = 0; k < yidx.length; k++) {
+      drawsel(c, idx, xidx[i], yidx[k], i*xsz, k*ysz, xsz, ysz);
+    }
   }
 }
 
 void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
-  x+=3;
-  y+=3;
   xsz-=diam;
   ysz-=diam;
 
@@ -202,56 +192,61 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   float yysc = ysz / (maxs.get(n)-ymin);
   ArrayList<Float> pt = pts.get(idx);
   int xx = int(xxsc * (pt.get(m)-xmin));
-  int yy = int(yysc * (pt.get(n)-ymin));
-  ellipse(x+xx, y+yy, diam, diam);
+  int yy = ysz - int(yysc * (pt.get(n)-ymin)); // flip y coord
+  ellipse(x+xx+diam/2, y+yy+diam/2, diam, diam);
 }
 
+void drawbox(int c, int m, int n, int xsz, int ysz) {
+  stroke(cols[c]);
+  noFill();
+
+  for (int i = 0; i < xidx.length; i++) {
+    rect(i*xsz, n*ysz, xsz, ysz);
+  }
+  for (int i = 0; i < yidx.length; i++) {
+    rect(m*xsz, i*ysz, xsz, ysz);
+  }
+}
+
+int pm = 0; int pn = 0;
 void draw() {
-//  println(frameRate);
   int dt = millis();
   //  background(255);
-  for (int i = 0; i < 6; i++) {
-    for (int k = 0; k < 6; k++) {
-      //      drawscat(i+1, k+2, i*128, k*106, 128, 106);
-      ArrayList<Integer> tmp = closept(i+1, k+2, i*128, k*106, 128, 106);
-      if (tmp != null) {
-        ptsel = tmp;
-      }
+
+  if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
+    if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
+      drawbox(0, pm, pn, boxwidth, boxheight);
+      pm = mouseX / boxwidth;
+      pn = mouseY / boxheight;
+      drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
     }
+    ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight);
   }
   ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
   ptold.removeAll(ptsel);
   ArrayList<Integer> ptnew = new ArrayList<Integer>(ptsel);
   ptnew.removeAll(ptprev);
-  for (int i = 0; i < 6; i++) {
-    for (int k = 0; k < 6; k++) {
-      for (int idx : ptold) {
-        if (!brush.contains(idx)) {
-          drawsel(ptcol.get(idx), idx, i+1, k+2, i*128, k*106, 128, 106);
-        }
-      }
-      for (int idx : ptold) {
-        if (brush.contains(idx)) {
-          drawsel(ptcol.get(idx), idx, i+1, k+2, i*128, k*106, 128, 106);
-        }
-      }
+
+  for (int idx : ptold) {
+    if (!brush.contains(idx)) {
+      drawsel(ptcol.get(idx), idx, boxwidth, boxheight);
     }
   }
-  if (drag && ptnew != null) {
+  for (int idx : ptold) {
+    if (brush.contains(idx)) {
+      drawsel(ptcol.get(idx), idx, boxwidth, boxheight);
+    }
+  }
+
+  for (int idx : ptnew) {
+    drawsel(cols.length-1, idx, boxwidth, boxheight);
+  }
+
+  if (drag) {
     brush.addAll(ptnew);
     for (int idx : ptnew) {
       ptcol.set(idx, colx);
     }
-  }
-  for (int i = 0; i < 6; i++) {
-    for (int k = 0; k < 6; k++) {
-      if (ptsel != null) {
-        for (int idx : ptnew) {
-          drawsel(cols.length-1, idx, i+1, k+2, i*128, k*106, 128, 106);
-        }
-      }
-    }
-    //    println (ptidx);
   }
 
   for (int idx : ptnew) {
@@ -259,14 +254,11 @@ void draw() {
     int x2 = 6;
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2.,xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2.,yy), grainsustain, -1.0*(panning/100));
-    
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2., xx), grainsustain, panning/100);
+    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
   } 
-  // println(ptnew.size());
 
   ptprev = ptsel;
-  //  drawscat(2, 4, 0, 256, 256, 256);
 } 
 
 void mouseClicked() {  
@@ -274,63 +266,51 @@ void mouseClicked() {
   mx = mouseX;
   my = mouseY;
 
-  if (ptsel != null && !ptsel.isEmpty()) {
+  if (!ptsel.isEmpty()) {
     if (! brush.removeAll(ptsel)) { // toggle selection
       brush.addAll(ptsel);
       for (int idx : ptsel) { // set all selected points to current color
         ptcol.set(idx, colx);
       }
-    } 
-    else {
+    } else {
       for (int idx : ptsel) { // set all selected points to clear
         ptcol.set(idx, 0);
       }
     }
-  } 
-  else {
+  } else {
     background(255);
     brush.clear();
     colx = 1;
     for (int idx : ptorder) { // set all points to clear
       ptcol.set(idx, 0);
     }
-    for (int i = 0; i < 6; i++) {
-      for (int k = 0; k < 6; k++) {
-        drawscat(i+1, k+2, i*128, k*106, 128, 106);
-      }
-    }
+    drawscat(boxwidth, boxheight);
   }
 }
 
 void mouseDragged() {  
   if (!drag) { // start new drag
     drag = true;
-    if (ptsel == null || ptsel.isEmpty()) {
+    if (ptsel.isEmpty()) {
       background(255);
-      for (int i = 0; i < 6; i++) {
-        for (int k = 0; k < 6; k++) {
-          drawscat(i+1, k+2, i*128, k*106, 128, 106);
-        }
-      }
+      drawscat(boxwidth, boxheight);
       colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
-    } 
-    else {
+    } else {
       // max color under selection
       int[] ccols = new int [cols.length-1]; // initialized to zero?!
       int max = 0;
-      int maxidx = 0;
+      int midx = 0;
       for (int idx : ptsel) {
         ccols[ptcol.get(idx)] += 1;
         if (ccols[ptcol.get(idx)] > max) {
-          maxidx = ptcol.get(idx);
-          max = ccols[maxidx];
+          midx = ptcol.get(idx);
+          max = ccols[midx];
         }
       }
-      if (maxidx == 0) {
+      if (midx == 0) {
         colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
-      } 
-      else {
-        colx = maxidx;
+      } else {
+        colx = midx;
       }
       brush.addAll(ptsel);
       for (int idx : ptsel) { // set selected points to new brush
@@ -378,42 +358,43 @@ void slider2(float slidervalue2) {
 void keyPressed()
 {
   switch (key) {
-    case 'a':
-      freqA = 220.0;
-      break;
-    case 's':
-      freqA = 440.0;
-      break; 
-    case 'd':
-      freqA = 880.0;
-      break;
-    case 'f':
-      freqA = 1760.0;
-      break; 
-    case 'g':
-      freqA = 3520.0;
-      break;   
-    case 'q':
-      freqB = 220.0;
-      break;
-    case 'w':
-      freqB = 440.0;
-      break; 
-    case 'e':
-      freqB = 880.0;
-      break;
-    case 'r':
-      freqB = 1760.0;
-      break; 
-    case 't':
-      freqB = 3520.0;
-      break;    
-    case ' ':
-      freqA = 880.0;
-      freqB = 3520.0;
-      break;   
-      
-    default: 
-      break;
+  case 'a':
+    freqA = 220.0;
+    break;
+  case 's':
+    freqA = 440.0;
+    break; 
+  case 'd':
+    freqA = 880.0;
+    break;
+  case 'f':
+    freqA = 1760.0;
+    break; 
+  case 'g':
+    freqA = 3520.0;
+    break;   
+  case 'q':
+    freqB = 220.0;
+    break;
+  case 'w':
+    freqB = 440.0;
+    break; 
+  case 'e':
+    freqB = 880.0;
+    break;
+  case 'r':
+    freqB = 1760.0;
+    break; 
+  case 't':
+    freqB = 3520.0;
+    break;    
+  case ' ':
+    freqA = 880.0;
+    freqB = 3520.0;
+    break;   
+
+  default: 
+    break;
   }
 }
+
