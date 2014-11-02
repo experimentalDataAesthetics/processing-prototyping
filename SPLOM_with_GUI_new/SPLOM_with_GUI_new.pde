@@ -231,11 +231,11 @@ void draw() {
   if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
     if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
       drawbox(0, pm, pn, boxwidth, boxheight);
-      drawbox(0, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+//      drawbox(0, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       pm = mouseX / boxwidth;
       pn = mouseY / boxheight;
       drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
-      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+//      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
     }
   }
 
