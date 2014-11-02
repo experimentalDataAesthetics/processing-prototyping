@@ -327,7 +327,7 @@ void mouseClicked() {
     pm = min(mouseX / boxwidth, xidx.length-1);
     pn = min(mouseY / boxheight, yidx.length-1);
     drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
-    drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+//    drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
   }
 }
 
@@ -346,7 +346,7 @@ void mouseDragged() {
       pm = min(mouseX / boxwidth, xidx.length-1);
       pn = min(mouseY / boxheight, yidx.length-1);
       drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
-      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+//      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
 
       colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
     } else {
