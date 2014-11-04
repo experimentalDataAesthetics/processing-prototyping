@@ -19,8 +19,12 @@ int selcdim1 = 6; // selected dimension A
 int selcdim2 = 7; // selected dimension B
 
 //Visualization settings
+int winbreite = 1300;
+int winhoehe = 1250;
+int guiposition = 1150;
+
 int diam = 3; // point size
-int boxsize = 50;
+int boxsize = 80;
 
 int boxwidth = boxsize;  // width of grid
 int boxheight = boxsize; // height of grid
@@ -66,12 +70,12 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  size(1050, 1050);
+  size(winbreite, winhoehe);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1").setPosition(900, 10).setWidth(100).activateEvent(false)
+  Group g1 = cp5.addGroup("g1").setPosition(guiposition, 10).setWidth(100).activateEvent(false)
     .setBackgroundColor(color(180)).setBackgroundHeight(360).setLabel("Parameters");
     
     cp5.addRadioButton("radio1")
@@ -341,8 +345,8 @@ void draw() {
     float xx1 = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy1 = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     
-    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqA*pow(2., xx1), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqB*pow(2., yy1), grainsustain, -1.0*(panning/100));
+    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqA*pow(2., xx1), grainsustain, 1.0);
+    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqB*pow(2., yy1), grainsustain, -1.0);
     
     
   } 
