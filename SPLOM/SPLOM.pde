@@ -1,3 +1,15 @@
+/*
+Current to do list:
+
+1. highlight sonified dimensions respectively sonifiy via 
+mouse-selection (click on box). Selection is framed with a blue frame.
+
+2. making grey (lower alpha value) all mirrored boxes of the brushing box.
+
+3. changing speed of re-play (mouse trace recording)
+Fixing bug: At the first play it plays only first entries?
+
+*/
 import oscP5.*;
 import netP5.*;
 import java.util.*;
@@ -10,10 +22,14 @@ OscP5 oscP5;
 NetAddress myRemoteLocation;
 
 //Sonification settings
-float grainsustain = 0.04;
-float panning = 0.0;
-float freqA = 880.0;
-float freqB = 3520.0;
+float grainsustain = 0.01;
+float freqA = 1760.0;
+float freqB = 1244.5;
+// http://en.wikipedia.org/wiki/Scientific_pitch_notation
+
+float leftamp = 0.3;
+float rightamp = 0.05;
+float pitchstretch = 1.2; // narrow range seems to be better to hear correlation?
 
 int selcdim1 = 6; // selected dimension A
 int selcdim2 = 7; // selected dimension B
@@ -23,7 +39,7 @@ int winbreite = 1300;
 int winhoehe = 1250;
 int guiposition = 1150;
 
-int diam = 3; // point size
+int diam = 4; // point size
 int boxsize = 80;
 
 int boxwidth = boxsize;  // width of grid
@@ -340,13 +356,13 @@ void draw() {
 //sonification loop
 
   for (int idx : ptnew) {
-    int x1 = selcdim1; //5
-    int x2 = selcdim2; //6
+    int x1 = selcdim1; // dimensions defined in the header
+    int x2 = selcdim2; //
     float xx1 = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy1 = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     
-    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqA*pow(2., xx1), grainsustain, 1.0);
-    sendosctograin((ptnew.size() < 1 ? 0.01 : 0.01/ptnew.size()), freqB*pow(2., yy1), grainsustain, -1.0);
+    sendosctograin((ptnew.size() < 10 ? leftamp : leftamp/ptnew.size()), freqA*pow(pitchstretch, xx1), grainsustain, -1.0);
+    sendosctograin2((ptnew.size() < 10 ? rightamp : rightamp/ptnew.size()), freqB*pow(pitchstretch, yy1), grainsustain, 1.0);
     
     
   } 
@@ -436,8 +452,27 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
-  //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
   myMessage.add("grain2"); 
+  myMessage.add(-1); 
+  myMessage.add(0); 
+  myMessage.add(1);
+  myMessage.add("amp"); 
+  myMessage.add(amp);   
+  myMessage.add("freq"); 
+  myMessage.add(freq); 
+  myMessage.add("sustain"); 
+  myMessage.add(sstn); 
+  myMessage.add("pan"); 
+  myMessage.add(pan);  
+  myBundle.add(myMessage); 
+  oscP5.send(myBundle, myRemoteLocation);
+}
+
+void sendosctograin2(float amp, float freq, float sstn, float pan) {
+  OscBundle myBundle = new OscBundle();
+  myBundle.setTimetag(myBundle.now());  // and time tag          
+  OscMessage myMessage = new OscMessage("/s_new");         
+  myMessage.add("grain3"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);

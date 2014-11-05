@@ -48,3 +48,12 @@ SynthDef("grain4", { |out=0.0, amp=0.1, freq=440, sustain=0.01 |
 	OffsetOut.ar(out, snd * env);
 }, \ir ! 5).add;
 )
+
+(
+SynthDef("grainFM", { |out, amp=0.1, freq=440, freq2=1040, sustain=0.01, pan|
+	var snd = FSinOsc.ar(freq)*FSinOsc.ar(freq2);
+	var amp2 = amp * AmpComp.ir(freq.max(50)) * 0.5;
+	var env = EnvGen.ar(Env.sine(sustain, amp2), doneAction: 2);
+	OffsetOut.ar(out, Pan2.ar(snd * env, pan));
+}, \ir ! 5).add;
+)
