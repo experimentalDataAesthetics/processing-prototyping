@@ -49,9 +49,14 @@ ArrayList<Integer> ptorder = new ArrayList<Integer>();
 ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
 color[] cols = new color [] {
-  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+  color(0, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+//  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
 };
-int colx = cols.length-2;
+color colline = color(0, 0, 0);
+color colhighlbox = color(255, 0, 0);
+color colhighlpt = color(255, 0, 0);
+color colnohighlpt = color(0, 0, 0);
+int colx = cols.length-1;
 
 int mx = 0;
 int my = 0;
@@ -185,7 +190,7 @@ void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
   }
 }
 
-void drawsel(int c, int idx, int xsz, int ysz) {
+void drawsel(color c, int idx, int xsz, int ysz) {
   for (int i = 0; i < xidx.length; i++) {
     for (int k = 0; k < yidx.length; k++) {
       drawsel(c, idx, xidx[i], yidx[k], i*xsz, k*ysz, xsz, ysz);
@@ -193,12 +198,12 @@ void drawsel(int c, int idx, int xsz, int ysz) {
   }
 }
 
-void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
+void drawsel(color c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   xsz-=diam;
   ysz-=diam;
 
   noStroke();
-  fill(cols[c]);
+  fill(c);
   float xmin = mins.get(m);
   float ymin = mins.get(n);
   float xxsc = xsz / (maxs.get(m)-xmin);
@@ -209,8 +214,8 @@ void drawsel(int c, int idx, int m, int n, int x, int y, int xsz, int ysz) {
   ellipse(x+xx+diam/2, y+yy+diam/2, diam, diam);
 }
 
-void drawbox(int c, int m, int n, int xsz, int ysz) {
-  stroke(cols[c]);
+void drawbox(color c, int m, int n, int xsz, int ysz) {
+  stroke(c);
   noFill();
 
   for (int i = 0; i < xidx.length; i++) {
@@ -230,11 +235,12 @@ void draw() {
 
   if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
     if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
-      drawbox(0, pm, pn, boxwidth, boxheight);
+      drawbox(colline, pm, pn, boxwidth, boxheight);
 //      drawbox(0, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       pm = mouseX / boxwidth;
       pn = mouseY / boxheight;
-      drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+      // highlight
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
 //      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
     }
   }
@@ -268,17 +274,17 @@ void draw() {
 
   for (int idx : ptold) {
     if (!brush.contains(idx)) {
-      drawsel(ptcol.get(idx), idx, boxwidth, boxheight);
+      drawsel(cols[ptcol.get(idx)], idx, boxwidth, boxheight);
     }
   }
   for (int idx : ptold) {
     if (brush.contains(idx)) {
-      drawsel(ptcol.get(idx), idx, boxwidth, boxheight);
+      drawsel(cols[ptcol.get(idx)], idx, boxwidth, boxheight);
     }
   }
 
   for (int idx : ptnew) {
-    drawsel(cols.length-1, idx, boxwidth, boxheight);
+    drawsel(colhighlpt, idx, boxwidth, boxheight);
   }
 
   if (drag) {
@@ -326,7 +332,7 @@ void mouseClicked() {
     drawscat(boxwidth, boxheight);
     pm = min(mouseX / boxwidth, xidx.length-1);
     pn = min(mouseY / boxheight, yidx.length-1);
-    drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+    drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
 //    drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
   }
 }
@@ -345,10 +351,10 @@ void mouseDragged() {
       drawscat(boxwidth, boxheight);
       pm = min(mouseX / boxwidth, xidx.length-1);
       pn = min(mouseY / boxheight, yidx.length-1);
-      drawbox(cols.length-1, pm, pn, boxwidth, boxheight);
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
 //      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
 
-      colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+      colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
       int[] ccols = new int [cols.length-1]; // initialized to zero?!
@@ -362,7 +368,7 @@ void mouseDragged() {
         }
       }
       if (midx == 0) {
-        colx = colx+1 > cols.length-2 ? 1 : colx+1; // next color without brush
+        colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
       } else {
         colx = midx;
       }
