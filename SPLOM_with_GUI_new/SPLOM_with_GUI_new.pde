@@ -11,6 +11,8 @@ float panning = 0.0;
 float freqA = 880.0;
 float freqB = 3520.0;
 
+int soundx = 0;
+int soundy = 1;
 
 import oscP5.*;
 import netP5.*;
@@ -20,8 +22,12 @@ NetAddress myRemoteLocation;
 int diam = 5; // point size
 int boxwidth = 100;  // width of grid
 int boxheight = 100; // height of grid
-Integer[] xidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}; // map grid (left-right) to dim
-Integer[] yidx = {0, 1, 2, 3, 4, 5, 6, 7}; // map grid (top-down) to dim
+Integer[] xidx = {
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+}; // map grid (left-right) to dim
+Integer[] yidx = {
+  0, 1, 2, 3, 4, 5, 6, 7
+}; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
 boolean record = false;
@@ -50,10 +56,12 @@ ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
 color[] cols = new color [] {
   color(0, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
-//  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+  //  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
 };
 color colline = color(0, 0, 0);
 color colhighlbox = color(255, 0, 0);
+color colhighlbox2 = color(255, 255, 0);
+color colhighlsoundsel = color(0, 255, 0);
 color colhighlpt = color(255, 0, 0);
 color colnohighlpt = color(0, 0, 0);
 int colx = cols.length-1;
@@ -236,12 +244,12 @@ void draw() {
   if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
     if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
       drawbox(colline, pm, pn, boxwidth, boxheight);
-//      drawbox(0, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawbox(colline, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       pm = mouseX / boxwidth;
       pn = mouseY / boxheight;
       // highlight
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-//      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
     }
   }
 
@@ -295,8 +303,8 @@ void draw() {
   }
 
   for (int idx : ptnew) {
-    int x1 = 5;
-    int x2 = 6;
+    int x1 = xidx[soundx];
+    int x2 = yidx[soundy];
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2., xx), grainsustain, panning/100);
@@ -307,33 +315,45 @@ void draw() {
 } 
 
 void mouseClicked() {  
-  int base = millis();
-  mx = mouseX;
-  my = mouseY;
 
-  if (!ptsel.isEmpty()) {
-    if (! brush.removeAll(ptsel)) { // toggle selection
-      brush.addAll(ptsel);
-      for (int idx : ptsel) { // set all selected points to current color
-        ptcol.set(idx, colx);
+  if (mouseButton == RIGHT) {
+    if (mouseX / boxwidth < xidx.length){
+      soundx = mouseX / boxwidth;
+    }
+    if (mouseY / boxwidth < yidx.length){
+      soundy = mouseY / boxwidth;
+    }
+    drawbox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+    println(xidx[soundx] + " " + yidx[soundy]);
+  } else {    
+    int base = millis();
+    mx = mouseX;
+    my = mouseY;
+
+    if (!ptsel.isEmpty()) {
+      if (! brush.removeAll(ptsel)) { // toggle selection
+        brush.addAll(ptsel);
+        for (int idx : ptsel) { // set all selected points to current color
+          ptcol.set(idx, colx);
+        }
+      } else {
+        for (int idx : ptsel) { // set all selected points to clear
+          ptcol.set(idx, 0);
+        }
       }
     } else {
-      for (int idx : ptsel) { // set all selected points to clear
+      background(255);
+      brush.clear();
+      colx = 1;
+      for (int idx : ptorder) { // set all points to clear
         ptcol.set(idx, 0);
       }
+      drawscat(boxwidth, boxheight);
+      pm = min(mouseX / boxwidth, xidx.length-1);
+      pn = min(mouseY / boxheight, yidx.length-1);
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
     }
-  } else {
-    background(255);
-    brush.clear();
-    colx = 1;
-    for (int idx : ptorder) { // set all points to clear
-      ptcol.set(idx, 0);
-    }
-    drawscat(boxwidth, boxheight);
-    pm = min(mouseX / boxwidth, xidx.length-1);
-    pn = min(mouseY / boxheight, yidx.length-1);
-    drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-//    drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
   }
 }
 
@@ -351,8 +371,8 @@ void mouseDragged() {
       drawscat(boxwidth, boxheight);
       pm = min(mouseX / boxwidth, xidx.length-1);
       pn = min(mouseY / boxheight, yidx.length-1);
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-//      drawbox(cols.length-1, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
 
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
