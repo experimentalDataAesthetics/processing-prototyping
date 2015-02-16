@@ -234,6 +234,13 @@ void drawbox(color c, int m, int n, int xsz, int ysz) {
   }
 }
 
+void drawonebox(color c, int m, int n, int xsz, int ysz) {
+  stroke(c);
+  noFill();
+
+  rect(m*xsz, n*ysz, xsz, ysz);
+}
+
 int pm = 0; 
 int pn = 0;
 
@@ -245,11 +252,14 @@ void draw() {
     if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
       drawbox(colline, pm, pn, boxwidth, boxheight);
       drawbox(colline, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+
       pm = mouseX / boxwidth;
       pn = mouseY / boxheight;
       // highlight
       drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
     }
   }
 
@@ -317,14 +327,12 @@ void draw() {
 void mouseClicked() {  
 
   if (mouseButton == RIGHT) {
-    if (mouseX / boxwidth < xidx.length){
+    if (mouseX / boxwidth < xidx.length && mouseY / boxwidth < yidx.length){
       soundx = mouseX / boxwidth;
-    }
-    if (mouseY / boxwidth < yidx.length){
       soundy = mouseY / boxwidth;
     }
-    drawbox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-    println(xidx[soundx] + " " + yidx[soundy]);
+    drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+//    println(xidx[soundx] + " " + yidx[soundy]);
   } else {    
     int base = millis();
     mx = mouseX;
@@ -353,6 +361,7 @@ void mouseClicked() {
       pn = min(mouseY / boxheight, yidx.length-1);
       drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
     }
   }
 }
@@ -373,6 +382,7 @@ void mouseDragged() {
       pn = min(mouseY / boxheight, yidx.length-1);
       drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
 
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
