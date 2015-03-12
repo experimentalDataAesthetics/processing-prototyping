@@ -33,7 +33,7 @@ Integer[] yidx = {
 boolean record = false;
 boolean clear = false;
 float play = -1; // play stopped
-float playspeed = .2; // play speed <1 :: slowmo  >1 :: timelapse
+float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
 boolean pause = false;
 ArrayList<Integer> mouseXs = new ArrayList<Integer>();
 ArrayList<Integer> mouseYs = new ArrayList<Integer>();
@@ -46,7 +46,7 @@ String line;
 ArrayList<ArrayList<Float>> pts = new ArrayList<ArrayList<Float>>();
 ArrayList<Integer> ptsound = new ArrayList<Integer>();
 int lastsound = 0;
-int delaysound = 100; // delay before new sounds are played in ms
+int delaysound = 0; // delay before new sounds are played in ms
 ArrayList<Float> mins = new ArrayList<Float>();
 ArrayList<Float> maxs = new ArrayList<Float>();
 

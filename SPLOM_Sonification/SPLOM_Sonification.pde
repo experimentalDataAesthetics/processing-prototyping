@@ -20,13 +20,13 @@ OscP5 oscP5;
 NetAddress myRemoteLocation;
 
 int diam = 5; // point size
-int boxwidth = 100;  // width of grid
-int boxheight = 100; // height of grid
+int boxwidth = 120;  // width of grid
+int boxheight = 120; // height of grid
 Integer[] xidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  0, 1, 2, 3, 4, 5, 6, 7
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -70,12 +70,12 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  size(1050, 640);
+  size(1800, 1200);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
+  Group g1 = cp5.addGroup("g1").setPosition(1380, 10).setWidth(250).activateEvent(true)
     .setBackgroundColor(color(180)).setBackgroundHeight(100).setLabel("GUI");
 
   cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
@@ -419,7 +419,7 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
   //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
-  myMessage.add("grain2"); 
+  myMessage.add("grain3"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
