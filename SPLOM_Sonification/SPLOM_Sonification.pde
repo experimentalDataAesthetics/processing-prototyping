@@ -19,14 +19,14 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
-int diam = 5; // point size
-int boxwidth = 100;  // width of grid
-int boxheight = 100; // height of grid
+int diam = 4; // point size
+int boxwidth = 75;  // width of grid
+int boxheight = 75; // height of grid
 Integer[] xidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  0, 1, 2, 3, 4, 5, 6, 7
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -74,7 +74,8 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  size(1050, 640);
+  size(displayWidth, displayHeight);
+  startController(this);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
