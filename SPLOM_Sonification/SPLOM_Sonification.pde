@@ -1,11 +1,15 @@
 import oscP5.*;
 import netP5.*;
-
 import java.util.*;
 import java.lang.Math;
 import controlP5.*;
 ControlP5 cp5;
+import oscP5.*;
+import netP5.*;
+OscP5 oscP5;
+NetAddress myRemoteLocation;
 
+// Sound settings
 float grainsustain = 0.04;
 float panning = 0.0;
 float freqA = 880.0;
@@ -14,11 +18,7 @@ float freqB = 3520.0;
 int soundx = 0;
 int soundy = 1;
 
-import oscP5.*;
-import netP5.*;
-OscP5 oscP5;
-NetAddress myRemoteLocation;
-
+// Settings of SPLOM
 int diam = 4; // point size
 int boxwidth = 75;  // width of grid
 int boxheight = 75; // height of grid
@@ -30,10 +30,13 @@ Integer[] yidx = {
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
+// Playback settings
 boolean record = false;
 boolean clear = false;
 float play = -1; // play stopped
 float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
+
+
 boolean pause = false;
 ArrayList<Integer> mouseXs = new ArrayList<Integer>();
 ArrayList<Integer> mouseYs = new ArrayList<Integer>();
@@ -46,7 +49,9 @@ String line;
 ArrayList<ArrayList<Float>> pts = new ArrayList<ArrayList<Float>>();
 ArrayList<Integer> ptsound = new ArrayList<Integer>();
 int lastsound = 0;
-int delaysound = 0; // delay before new sounds are played in ms
+
+// delay before new sounds are played in ms. This is for playing several points at once.
+int delaysound = 0; 
 ArrayList<Float> mins = new ArrayList<Float>();
 ArrayList<Float> maxs = new ArrayList<Float>();
 
@@ -58,6 +63,7 @@ ArrayList<Integer> ptprev = new ArrayList<Integer>();
 ArrayList<Integer> ptorder = new ArrayList<Integer>();
 ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
+// Color settings
 color[] cols = new color [] {
   color(0, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
   //  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
@@ -73,9 +79,10 @@ int colx = cols.length-1;
 int mx = 0;
 int my = 0;
 
+
 void setup() {
   size(displayWidth, displayHeight);
-  startController(this);
+  initKNC2(); 
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
@@ -84,9 +91,7 @@ void setup() {
     .setBackgroundColor(color(180)).setBackgroundHeight(100).setLabel("GUI");
 
   cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
-
   cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("Panning");
-
   cp5.addSlider("slider3").setPosition(10, 60).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushwidth");
   cp5.addSlider("slider4").setPosition(10, 80).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushheight");
 
@@ -127,6 +132,7 @@ void setup() {
       }
     }
   }
+  
   background(255);
   drawscat(boxwidth, boxheight);
 }
@@ -250,6 +256,8 @@ int pm = 0;
 int pn = 0;
 
 void draw() {
+  updateKNC2();
+ // println(midi.value(0)); testing MIDI-In from controller
   int dt = millis();
   //  background(255);
 
@@ -331,7 +339,8 @@ void draw() {
   }
 
   ptsound.addAll(ptnew);
-  if (millis() - lastsound > delaysound) {
+  //if (millis() - lastsound > delaysound) {
+  if (millis() - lastsound > (midi.value(1)*200.0)) {
     lastsound = millis();
   for (int idx : ptsound) {
     int x1 = xidx[soundx];
