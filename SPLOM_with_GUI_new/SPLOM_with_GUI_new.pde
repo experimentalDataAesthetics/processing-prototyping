@@ -32,7 +32,8 @@ Integer[] yidx = {
 
 boolean record = false;
 boolean clear = false;
-int play = -1; // play stopped
+float play = -1; // play stopped
+float playspeed = .2; // play speed <1 :: slowmo  >1 :: timelapse
 boolean pause = false;
 ArrayList<Integer> mouseXs = new ArrayList<Integer>();
 ArrayList<Integer> mouseYs = new ArrayList<Integer>();
@@ -43,6 +44,9 @@ float myd = diam;
 BufferedReader reader;
 String line;
 ArrayList<ArrayList<Float>> pts = new ArrayList<ArrayList<Float>>();
+ArrayList<Integer> ptsound = new ArrayList<Integer>();
+int lastsound = 0;
+int delaysound = 100; // delay before new sounds are played in ms
 ArrayList<Float> mins = new ArrayList<Float>();
 ArrayList<Float> maxs = new ArrayList<Float>();
 
@@ -126,7 +130,7 @@ void setup() {
   drawscat(boxwidth, boxheight);
 }
 
-ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz, float mxd, float myd) {
+ArrayList<Integer> closept(int m, int n, float x, float y, int xsz, int ysz, float mxd, float myd) {
   ArrayList<Integer> tmp = new ArrayList<Integer>();
   xsz-=diam;
   ysz-=diam;
@@ -263,11 +267,24 @@ void draw() {
     }
   }
 
-  if (play > -1) {
-    ptsel = closept(xidx[mouseXs.get(play) / boxwidth], yidx[mouseYs.get(play) / boxheight], mouseXs.get(play) % boxwidth, mouseYs.get(play) % boxheight, boxwidth, boxheight, mxd, myd);
+  if (play >= 0.0) {
+// block needs to move to a function
+  {
+    int playi = int(play);
+    float playf = play % 1;
+    float mx, my;
+    if (playi < mouseXs.size()-1) {
+      mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
+      my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
+    } else {
+      mx = mouseXs.get(playi);
+      my = mouseYs.get(playi);
+    }
+    ptsel = closept(xidx[int(mx) / boxwidth], yidx[int(my) / boxheight], mx % boxwidth, my % boxheight, boxwidth, boxheight, mxd, myd);
+  }
     if (!pause) {
-      play++;
-      if (play >= mouseXs.size()) {
+      play += playspeed;
+      if (play > mouseXs.size()-1) {
         play = -1; // play stopped
       }
     }
@@ -312,14 +329,21 @@ void draw() {
     }
   }
 
-  for (int idx : ptnew) {
+  ptsound.addAll(ptnew);
+  if (millis() - lastsound > delaysound) {
+    lastsound = millis();
+  for (int idx : ptsound) {
     int x1 = xidx[soundx];
     int x2 = yidx[soundy];
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2., xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
+    int sz = ptsound.size();
+    println(sz);
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
   } 
+  ptsound.clear();
+  }
 
   ptprev = ptsel;
 } 
@@ -387,7 +411,7 @@ void mouseDragged() {
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
-      int[] ccols = new int [cols.length-1]; // initialized to zero?!
+      int[] ccols = new int [cols.length]; // initialized to zero?!
       int max = 0;
       int midx = 0;
       for (int idx : ptsel) {
@@ -509,7 +533,8 @@ void keyPressed()
       record = false;       
       println("stop");
     }
-    if (play == -1) {
+//    if (play == -1) {
+    if (!pause) {
       if (!mouseXs.isEmpty()) {
         play = 0;
         pause = false;
