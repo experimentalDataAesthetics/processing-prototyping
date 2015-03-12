@@ -20,19 +20,20 @@ OscP5 oscP5;
 NetAddress myRemoteLocation;
 
 int diam = 5; // point size
-int boxwidth = 120;  // width of grid
-int boxheight = 120; // height of grid
+int boxwidth = 100;  // width of grid
+int boxheight = 100; // height of grid
 Integer[] xidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  0, 1, 2, 3, 4, 5, 6, 7
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
 boolean record = false;
 boolean clear = false;
-int play = -1; // play stopped
+float play = -1; // play stopped
+float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
 boolean pause = false;
 ArrayList<Integer> mouseXs = new ArrayList<Integer>();
 ArrayList<Integer> mouseYs = new ArrayList<Integer>();
@@ -43,6 +44,9 @@ float myd = diam;
 BufferedReader reader;
 String line;
 ArrayList<ArrayList<Float>> pts = new ArrayList<ArrayList<Float>>();
+ArrayList<Integer> ptsound = new ArrayList<Integer>();
+int lastsound = 0;
+int delaysound = 0; // delay before new sounds are played in ms
 ArrayList<Float> mins = new ArrayList<Float>();
 ArrayList<Float> maxs = new ArrayList<Float>();
 
@@ -70,12 +74,12 @@ int mx = 0;
 int my = 0;
 
 void setup() {
-  size(1800, 1200);
+  size(1050, 640);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1").setPosition(1380, 10).setWidth(250).activateEvent(true)
+  Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
     .setBackgroundColor(color(180)).setBackgroundHeight(100).setLabel("GUI");
 
   cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
@@ -126,7 +130,7 @@ void setup() {
   drawscat(boxwidth, boxheight);
 }
 
-ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz, float mxd, float myd) {
+ArrayList<Integer> closept(int m, int n, float x, float y, int xsz, int ysz, float mxd, float myd) {
   ArrayList<Integer> tmp = new ArrayList<Integer>();
   xsz-=diam;
   ysz-=diam;
@@ -263,11 +267,24 @@ void draw() {
     }
   }
 
-  if (play > -1) {
-    ptsel = closept(xidx[mouseXs.get(play) / boxwidth], yidx[mouseYs.get(play) / boxheight], mouseXs.get(play) % boxwidth, mouseYs.get(play) % boxheight, boxwidth, boxheight, mxd, myd);
+  if (play >= 0.0) {
+// block needs to move to a function
+  {
+    int playi = int(play);
+    float playf = play % 1;
+    float mx, my;
+    if (playi < mouseXs.size()-1) {
+      mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
+      my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
+    } else {
+      mx = mouseXs.get(playi);
+      my = mouseYs.get(playi);
+    }
+    ptsel = closept(xidx[int(mx) / boxwidth], yidx[int(my) / boxheight], mx % boxwidth, my % boxheight, boxwidth, boxheight, mxd, myd);
+  }
     if (!pause) {
-      play++;
-      if (play >= mouseXs.size()) {
+      play += playspeed;
+      if (play > mouseXs.size()-1) {
         play = -1; // play stopped
       }
     }
@@ -312,14 +329,21 @@ void draw() {
     }
   }
 
-  for (int idx : ptnew) {
+  ptsound.addAll(ptnew);
+  if (millis() - lastsound > delaysound) {
+    lastsound = millis();
+  for (int idx : ptsound) {
     int x1 = xidx[soundx];
     int x2 = yidx[soundy];
     float xx = (pts.get(idx).get(x1)-mins.get(x1)) / (maxs.get(x1)-mins.get(x1)); // normalize value
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqA*pow(2., xx), grainsustain, panning/100);
-    sendosctograin((ptnew.size() < 4 ? 0.1 : 0.1/ptnew.size()), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
+    int sz = ptsound.size();
+    println(sz);
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
   } 
+  ptsound.clear();
+  }
 
   ptprev = ptsel;
 } 
@@ -387,7 +411,7 @@ void mouseDragged() {
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
-      int[] ccols = new int [cols.length-1]; // initialized to zero?!
+      int[] ccols = new int [cols.length]; // initialized to zero?!
       int max = 0;
       int midx = 0;
       for (int idx : ptsel) {
@@ -419,7 +443,7 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
   //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
-  myMessage.add("grain3"); 
+  myMessage.add("grain2"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
@@ -509,7 +533,8 @@ void keyPressed()
       record = false;       
       println("stop");
     }
-    if (play == -1) {
+//    if (play == -1) {
+    if (!pause) {
       if (!mouseXs.isEmpty()) {
         play = 0;
         pause = false;
