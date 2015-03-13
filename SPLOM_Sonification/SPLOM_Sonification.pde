@@ -10,16 +10,16 @@ OscP5 oscP5;
 NetAddress myRemoteLocation;
 
 // Sound settings
-float grainsustain = 0.04;
+float grainsustain = 0.01;
 float panning = 0.0;
 float freqA = 880.0;
 float freqB = 3520.0;
 
 int soundx = 0;
-int soundy = 1;
+int soundy = 1; 
 
 // Settings of SPLOM
-int diam = 4; // point size
+float diam = 4.0; // point size
 int boxwidth = 78;  // width of grid
 int boxheight = 78; // height of grid
 Integer[] xidx = {
@@ -72,7 +72,7 @@ color colline = color(0, 0, 0);
 color colhighlbox = color(255, 0, 0);
 color colhighlbox2 = color(255, 255, 0);
 color colhighlsoundsel = color(0, 255, 0);
-color colhighlpt = color(210);
+color colhighlpt = color(255,0,0);
 color colnohighlpt = color(0, 0, 0);
 int colx = cols.length-1;
 
@@ -87,16 +87,22 @@ void setup() {
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1").setPosition(displayWidth-300, 10).setWidth(250).activateEvent(true)
-    .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("GUI");
+   
+    // change the default font to Verdana
+  PFont p = createFont("Verdana",15);
+  cp5.setControlFont(p);
+  
+  Group g1 = cp5.addGroup("g1").setPosition(displayWidth-400, 10).setWidth(380).activateEvent(true)  
+  .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("GUI for SPLOM Sonificator");
 
-  cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
-  cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("Panning");
-  cp5.addSlider("slider3").setPosition(10, 60).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushwidth");
-  cp5.addSlider("slider4").setPosition(10, 80).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushheight");
-  cp5.addSlider("slider5").setPosition(10, 120).setRange(0, 1000).setSize(90, 14).setValue(0).setGroup(g1).setLabel("Delay (ms)");
-  cp5.addSlider("slider6").setPosition(10, 140).setRange(1.0, 10.0).setSize(90, 14).setValue(1.0).setGroup(g1).setLabel("Playback speed faster");
-  cp5.addSlider("slider7").setPosition(10, 160).setRange(0.1, 1.0).setSize(90, 14).setValue(1.0).setGroup(g1).setLabel("Playback speed slower");
+  cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(150, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
+ // cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("FreqA");
+  cp5.addSlider("slider5").setPosition(10, 60).setColorForeground(color(255, 0, 0)).setRange(0, 1000).setSize(150, 14).setValue(delaysound).setGroup(g1).setLabel("Trigger Delay (ms)");
+
+  cp5.addSlider("slider3").setPosition(10, 80).setColorForeground(color(255, 0, 0)).setRange(0.0, boxwidth/2).setSize(150, 14).setValue(diam).setGroup(g1).setLabel("Brushwidth");
+  cp5.addSlider("slider4").setPosition(10, 100).setColorForeground(color(255, 0, 0)).setRange(0.0, boxheight/2).setSize(150, 14).setValue(diam).setGroup(g1).setLabel("Brushheight");
+  cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(150, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
+ // cp5.addSlider("slider7").setPosition(10, 160).setRange(0.1, 1.0).setSize(90, 14).setValue(playspeed).setGroup(g1).setLabel("Playback speed slower");
 
   
 
@@ -261,9 +267,9 @@ int pm = 0;
 int pn = 0;
 
 void draw() {
-  updateKNC2();
- // println(midi.value(0)); testing MIDI-In from controller
-  int dt = millis();
+  updateKNC2(); 
+  int dt = millis();  
+ 
   //  background(255);
 
   if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
@@ -353,6 +359,9 @@ void draw() {
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     int sz = ptsound.size();
     println(sz);
+    
+    // Sonification! <<<<<<<<<--------------------<<<<<<<<<--------------------
+    
     sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
     sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
   } 
@@ -360,6 +369,16 @@ void draw() {
   }
 
   ptprev = ptsel;
+  
+  
+  //Control sliders with MIDI (wrapper by Ludwig Zeller)
+  cp5.getController("slider1").setValue(midi.value(0, 0.5, 0.01)); //mapping reversed (big number at 0, small number at 127, due to some "initial value bug")
+  cp5.getController("slider3").setValue(midi.value(16, boxwidth/2, 4)); //mapping reversed
+  cp5.getController("slider4").setValue(midi.value(17, boxheight/2, 4)); //mapping reversed
+  cp5.getController("slider5").setValue(midi.value(1, 1000, 0)); //mapping reversed
+  cp5.getController("slider6").setValue(midi.value(7, 25.0, 1.0)); //mapping reversed
+//  cp5.getController("slider7").setValue(midi.value(7, 0.1, 1.0)); //mapping reversed  
+  
 } 
 
 void mouseClicked() {  
@@ -481,14 +500,12 @@ void keyPressed()
   case 'a':
     freqA = 220.0;
     break;
-    /*  case 's':
+  case 's':
      freqA = 440.0;
      break; 
-     
-     case 'd':
+  case 'd':
      freqA = 880.0;
      break;
-     */
   case 'f':
     freqA = 1760.0;
     break; 
@@ -510,12 +527,12 @@ void keyPressed()
   case 't':
     freqB = 3520.0;
     break;    
-  case ' ':
+  case 'l':
     freqA = 880.0;
     freqB = 3520.0;
     break;   
 
-  case 's':
+  case 'x': //record
     play = -1;
     if (record) {
       record = false;
@@ -527,7 +544,7 @@ void keyPressed()
     }
     break;
 
-  case 'd':
+  case ' ': //play
     if (record) {
       record = false;       
       println("stop");
@@ -554,8 +571,8 @@ void keyPressed()
 }
 
 void slider1(float slidervalue1) {
-  grainsustain = slidervalue1/1000.0;
-  //println("a numberbox event. setting grain sustain to "+slidervalue1);
+  grainsustain = slidervalue1;
+    //println("a numberbox event. setting grain sustain to "+slidervalue1);
 }
 
 void slider2(float slidervalue2) {
@@ -563,12 +580,12 @@ void slider2(float slidervalue2) {
   //println("a numberbox event. setting grain sustain to "+slidervalue2);
 }
 
-void slider3(float slidervalue3) {
-  mxd = slidervalue3 * boxwidth/2;
+void slider3(int slidervalue3) {
+  mxd = slidervalue3;
 }
 
-void slider4(float slidervalue4) {
-  myd = slidervalue4 * boxwidth/2;
+void slider4(int slidervalue4) {
+  myd = slidervalue4;
 }
 
 void slider5(int slidervalue5) {
@@ -582,5 +599,4 @@ void slider6(float slidervalue6) {
 void slider7(float slidervalue7) {
   playspeed = slidervalue7;
 }
-
 
