@@ -12,21 +12,22 @@ NetAddress myRemoteLocation;
 // Sound settings
 float grainsustain = 0.01;
 float panning = 0.0;
-float freqA = 880.0;
-float freqB = 3520.0;
+float freqA = 440.0; // S und E
+float freqB = 880.0;
+
 
 int soundx = 0;
 int soundy = 1; 
 
 // Settings of SPLOM
-float diam = 4.0; // point size
+float diam = 3.0; // point size
 int boxwidth = 78;  // width of grid
 int boxheight = 78; // height of grid
 Integer[] xidx = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -74,7 +75,7 @@ color colhighlbox2 = color(255, 255, 0);
 color colhighlsoundsel = color(0, 255, 0);
 color colhighlpt = color(255,0,0);
 color colnohighlpt = color(0, 0, 0);
-int colx = cols.length-1;
+int colx = cols.length; // what is this?
 
 int mx = 0;
 int my = 0;
@@ -92,17 +93,17 @@ void setup() {
   PFont p = createFont("Verdana",15);
   cp5.setControlFont(p);
   
-  Group g1 = cp5.addGroup("g1").setPosition(displayWidth-400, 10).setWidth(380).activateEvent(true)  
+  Group g1 = cp5.addGroup("g1").setPosition(displayWidth-330, 10).setWidth(330).activateEvent(true)  
   .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("GUI for SPLOM Sonificator");
 
-  cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(150, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
+  cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(100, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
  // cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("FreqA");
-  cp5.addSlider("slider5").setPosition(10, 60).setColorForeground(color(255, 0, 0)).setRange(0, 1000).setSize(150, 14).setValue(delaysound).setGroup(g1).setLabel("Trigger Delay (ms)");
+  cp5.addSlider("slider5").setPosition(10, 60).setColorForeground(color(255, 0, 0)).setRange(0, 1000).setSize(100, 14).setValue(delaysound).setGroup(g1).setLabel("Trigger Delay (ms)");
 
-  cp5.addSlider("slider3").setPosition(10, 80).setColorForeground(color(255, 0, 0)).setRange(0.0, boxwidth/2).setSize(150, 14).setValue(diam).setGroup(g1).setLabel("Brushwidth");
-  cp5.addSlider("slider4").setPosition(10, 100).setColorForeground(color(255, 0, 0)).setRange(0.0, boxheight/2).setSize(150, 14).setValue(diam).setGroup(g1).setLabel("Brushheight");
-  cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(150, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
- // cp5.addSlider("slider7").setPosition(10, 160).setRange(0.1, 1.0).setSize(90, 14).setValue(playspeed).setGroup(g1).setLabel("Playback speed slower");
+  cp5.addSlider("slider3").setPosition(10, 80).setColorForeground(color(255, 0, 0)).setRange(0.0, boxwidth/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushwidth");
+  cp5.addSlider("slider4").setPosition(10, 100).setColorForeground(color(255, 0, 0)).setRange(0.0, boxheight/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushheight");
+  cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(100, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
+  cp5.addSlider("slider7").setPosition(10, 160).setColorForeground(color(255, 0, 0)).setRange(0.1, 1.0).setSize(100, 14).setValue(1.0).setGroup(g1).setLabel("Playbackspeed slower");
 
   
 
@@ -528,8 +529,8 @@ void keyPressed()
     freqB = 3520.0;
     break;    
   case 'l':
-    freqA = 880.0;
-    freqB = 3520.0;
+    freqA = 440.0;
+    freqB = 880.0;
     break;   
 
   case 'x': //record
