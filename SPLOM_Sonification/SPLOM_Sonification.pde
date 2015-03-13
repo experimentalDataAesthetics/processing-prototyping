@@ -20,13 +20,13 @@ int soundy = 1;
 
 // Settings of SPLOM
 int diam = 4; // point size
-int boxwidth = 75;  // width of grid
-int boxheight = 75; // height of grid
+int boxwidth = 78;  // width of grid
+int boxheight = 78; // height of grid
 Integer[] xidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -72,7 +72,7 @@ color colline = color(0, 0, 0);
 color colhighlbox = color(255, 0, 0);
 color colhighlbox2 = color(255, 255, 0);
 color colhighlsoundsel = color(0, 255, 0);
-color colhighlpt = color(255, 0, 0);
+color colhighlpt = color(210);
 color colnohighlpt = color(0, 0, 0);
 int colx = cols.length-1;
 
@@ -87,13 +87,18 @@ void setup() {
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
 
   cp5 = new ControlP5(this); 
-  Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
-    .setBackgroundColor(color(180)).setBackgroundHeight(100).setLabel("GUI");
+  Group g1 = cp5.addGroup("g1").setPosition(displayWidth-300, 10).setWidth(250).activateEvent(true)
+    .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("GUI");
 
   cp5.addSlider("slider1").setPosition(10, 10).setRange(10.0, 500.0).setSize(90, 14).setValue(40.0).setGroup(g1).setLabel("Sustain");
   cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("Panning");
   cp5.addSlider("slider3").setPosition(10, 60).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushwidth");
   cp5.addSlider("slider4").setPosition(10, 80).setRange(0.0, 1.0).setSize(90, 14).setValue(0.1).setGroup(g1).setLabel("Brushheight");
+  cp5.addSlider("slider5").setPosition(10, 120).setRange(0, 1000).setSize(90, 14).setValue(0).setGroup(g1).setLabel("Delay (ms)");
+  cp5.addSlider("slider6").setPosition(10, 140).setRange(1.0, 10.0).setSize(90, 14).setValue(1.0).setGroup(g1).setLabel("Playback speed faster");
+  cp5.addSlider("slider7").setPosition(10, 160).setRange(0.1, 1.0).setSize(90, 14).setValue(1.0).setGroup(g1).setLabel("Playback speed slower");
+
+  
 
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -339,8 +344,7 @@ void draw() {
   }
 
   ptsound.addAll(ptnew);
-  //if (millis() - lastsound > delaysound) {
-  if (millis() - lastsound > (midi.value(1)*200.0)) {
+  if (millis() - lastsound > delaysound) {
     lastsound = millis();
   for (int idx : ptsound) {
     int x1 = xidx[soundx];
@@ -448,6 +452,8 @@ void mouseReleased() {
   drag = false;
 }
 
+// 
+
 void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
@@ -467,23 +473,6 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myMessage.add(pan);  
   myBundle.add(myMessage); 
   oscP5.send(myBundle, myRemoteLocation);
-}
-
-void slider1(float slidervalue1) {
-  grainsustain = slidervalue1/1000.0;
-  //println("a numberbox event. setting grain sustain to "+slidervalue1);
-}
-
-void slider2(float slidervalue2) {
-  panning = slidervalue2;
-  //println("a numberbox event. setting grain sustain to "+slidervalue2);
-}
-
-void slider3(float slidervalue3) {
-  mxd = slidervalue3 * boxwidth/2;
-}
-void slider4(float slidervalue4) {
-  myd = slidervalue4 * boxwidth/2;
 }
 
 void keyPressed()
@@ -563,4 +552,35 @@ void keyPressed()
     break;
   }
 }
+
+void slider1(float slidervalue1) {
+  grainsustain = slidervalue1/1000.0;
+  //println("a numberbox event. setting grain sustain to "+slidervalue1);
+}
+
+void slider2(float slidervalue2) {
+  panning = slidervalue2;
+  //println("a numberbox event. setting grain sustain to "+slidervalue2);
+}
+
+void slider3(float slidervalue3) {
+  mxd = slidervalue3 * boxwidth/2;
+}
+
+void slider4(float slidervalue4) {
+  myd = slidervalue4 * boxwidth/2;
+}
+
+void slider5(int slidervalue5) {
+  delaysound = slidervalue5;
+}
+
+void slider6(float slidervalue6) {
+  playspeed = slidervalue6;
+}
+
+void slider7(float slidervalue7) {
+  playspeed = slidervalue7;
+}
+
 
