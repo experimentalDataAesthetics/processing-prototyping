@@ -12,8 +12,8 @@ NetAddress myRemoteLocation;
 // Sound settings
 float grainsustain = 0.01;
 float panning = 0.0;
-float freqA = 440.0; // S und E
-float freqB = 880.0;
+float freqA = 880.0; // q und d
+float freqB = 220.0;
 
 
 int soundx = 0;
@@ -363,8 +363,13 @@ void draw() {
     
     // Sonification! <<<<<<<<<--------------------<<<<<<<<<--------------------
     
-    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
-    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
+   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
+   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+    
+   sendosc((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
+   sendosc((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+    
+    
   } 
   ptsound.clear();
   }
@@ -478,8 +483,27 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
-  //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
   myMessage.add("grain2"); 
+  myMessage.add(-1); 
+  myMessage.add(0); 
+  myMessage.add(1);
+  myMessage.add("amp"); 
+  myMessage.add(amp);   
+  myMessage.add("freq"); 
+  myMessage.add(freq); 
+  myMessage.add("sustain"); 
+  myMessage.add(sstn); 
+  myMessage.add("pan"); 
+  myMessage.add(pan);  
+  myBundle.add(myMessage); 
+  oscP5.send(myBundle, myRemoteLocation);
+}
+
+void sendosc(float amp, float freq, float sstn, float pan) {
+  OscBundle myBundle = new OscBundle();
+  myBundle.setTimetag(myBundle.now());  // and time tag          
+  OscMessage myMessage = new OscMessage("/s_new");         
+  myMessage.add("testsynth"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
@@ -529,9 +553,13 @@ void keyPressed()
     freqB = 3520.0;
     break;    
   case 'l':
-    freqA = 440.0;
+    freqA = 880.0;
+    freqB = 220.0;
+    break;  
+  case 'o':
+    freqA = 220.0;
     freqB = 880.0;
-    break;   
+    break;  
 
   case 'x': //record
     play = -1;
@@ -576,10 +604,10 @@ void slider1(float slidervalue1) {
     //println("a numberbox event. setting grain sustain to "+slidervalue1);
 }
 
-void slider2(float slidervalue2) {
-  panning = slidervalue2;
-  //println("a numberbox event. setting grain sustain to "+slidervalue2);
-}
+//void slider2(float slidervalue2) {
+//  panning = slidervalue2;
+//  //println("a numberbox event. setting grain sustain to "+slidervalue2);
+//}
 
 void slider3(int slidervalue3) {
   mxd = slidervalue3;
