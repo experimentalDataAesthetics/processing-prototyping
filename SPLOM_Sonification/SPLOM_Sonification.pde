@@ -351,6 +351,7 @@ void draw() {
   }
 
   ptsound.addAll(ptnew);
+  
   if (millis() - lastsound > delaysound) {
     lastsound = millis();
   for (int idx : ptsound) {
