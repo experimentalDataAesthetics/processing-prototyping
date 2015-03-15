@@ -38,7 +38,7 @@ SynthDef("grain3", { |out, amp=0.1, freq=440, sustain=0.01, pan|
 	OffsetOut.ar(out, Pan2.ar(snd * env, pan));
 }, \ir ! 5).add;
 
-SynthDef(\grainFM0, {|out, carfreq=440, modfreq=20, moddepth = 1, sustain=0.02, amp=0.2, pan|
+SynthDef("grainFM", {|out, carfreq=440, modfreq=20, moddepth = 1, sustain=0.02, amp=0.1, pan|
 	var env = EnvGen.ar(Env.sine(sustain, amp), doneAction: 2);
 	var sound = SinOsc.ar(carfreq, SinOsc.ar(modfreq) * moddepth) * env;
 	OffsetOut.ar(out, Pan2.ar(sound, pan))
