@@ -31,6 +31,7 @@ Integer[] yidx = {
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
 boolean record = false;
+boolean loop = false;
 boolean clear = false;
 float play = -1; // play stopped
 float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
@@ -285,7 +286,11 @@ void draw() {
     if (!pause) {
       play += playspeed;
       if (play > mouseXs.size()-1) {
-        play = -1; // play stopped
+        if (loop) {
+          play = 0; // loop 
+        } else {
+          play = -1; // play stopped
+        }
       }
     }
   } else {
@@ -490,9 +495,9 @@ void keyPressed()
      freqA = 880.0;
      break;
      */
-  case 'f':
+/*  case 'f':
     freqA = 1760.0;
-    break; 
+    break; */
   case 'g':
     freqA = 3520.0;
     break;   
@@ -532,6 +537,39 @@ void keyPressed()
     if (record) {
       record = false;       
       println("stop");
+    }
+    if (loop) {
+      loop = false;       
+//      play = -1;
+      println("stop");
+    }
+//    if (play == -1) {
+    if (!pause) {
+      if (!mouseXs.isEmpty()) {
+        play = 0;
+        pause = false;
+        println("play");
+      }
+    } else if (pause) {
+      pause = false;
+      println("play");
+    } else {
+      pause = true;
+      println("pause");
+    } 
+    break;   
+
+  case 'f':
+    if (record) {
+      record = false;       
+      println("stop");
+    }
+    if (loop) {
+      loop = false;       
+//      play = -1;
+      println("stop");
+    } else {
+      loop = true;
     }
 //    if (play == -1) {
     if (!pause) {
