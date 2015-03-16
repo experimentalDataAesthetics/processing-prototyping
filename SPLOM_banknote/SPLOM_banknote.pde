@@ -21,13 +21,13 @@ int soundy = 1;
 
 // Settings of SPLOM
 float diam = 3.0; // point size
-int boxwidth = 78;  // width of grid
-int boxheight = 78; // height of grid
+int boxwidth = 150;  // width of grid
+int boxheight = 150; // height of grid
 Integer[] xidx = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+  0, 1, 2, 3, 
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
+  0, 1, 2, 3, 
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -108,7 +108,7 @@ void setup() {
   
 
   // Open the file from the createWriter() example
-  reader = createReader("wine.data"); 
+  reader = createReader("banknote.data"); 
   do {
     try {
       line = reader.readLine();
