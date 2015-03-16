@@ -364,11 +364,14 @@ void draw() {
     
     // Sonification! <<<<<<<<<--------------------<<<<<<<<<--------------------
     
-   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
-   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+ //  sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
+ //  sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
     
-   sendosc((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
-   sendosc((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+ //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
+ //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+ 
+   sendgrainFM((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), freqB*pow(2., yy),  grainsustain, -1.0);
+
     
     
   } 
@@ -512,6 +515,28 @@ void sendosc(float amp, float freq, float sstn, float pan) {
   myMessage.add(amp);   
   myMessage.add("freq"); 
   myMessage.add(freq); 
+  myMessage.add("sustain"); 
+  myMessage.add(sstn); 
+  myMessage.add("pan"); 
+  myMessage.add(pan);  
+  myBundle.add(myMessage); 
+  oscP5.send(myBundle, myRemoteLocation);
+}
+
+void sendgrainFM(float amp, float carfreq, float modfreq, float sstn, float pan) {
+  OscBundle myBundle = new OscBundle();
+  myBundle.setTimetag(myBundle.now());  // and time tag          
+  OscMessage myMessage = new OscMessage("/s_new");         
+  myMessage.add("grainFM"); 
+  myMessage.add(-1); 
+  myMessage.add(0); 
+  myMessage.add(1);
+  myMessage.add("amp"); 
+  myMessage.add(amp);   
+  myMessage.add("carfreq"); 
+  myMessage.add(carfreq); 
+  myMessage.add("modfreq"); 
+  myMessage.add(modfreq); 
   myMessage.add("sustain"); 
   myMessage.add(sstn); 
   myMessage.add("pan"); 
