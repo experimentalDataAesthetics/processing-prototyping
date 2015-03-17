@@ -19,14 +19,18 @@ import netP5.*;
 OscP5 oscP5;
 NetAddress myRemoteLocation;
 
+float scalexy = 1;
+float transx = 0;
+float transy = 0;
+
 int diam = 5; // point size
 int boxwidth = 100;  // width of grid
 int boxheight = 100; // height of grid
 Integer[] xidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10
+  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (left-right) to dim
 Integer[] yidx = {
-  0, 1, 2, 3, 4, 5, 6, 7
+  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13
 }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
@@ -36,8 +40,8 @@ boolean clear = false;
 float play = -1; // play stopped
 float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
 boolean pause = false;
-ArrayList<Integer> mouseXs = new ArrayList<Integer>();
-ArrayList<Integer> mouseYs = new ArrayList<Integer>();
+ArrayList<Float> mouseXs = new ArrayList<Float>();
+ArrayList<Float> mouseYs = new ArrayList<Float>();
 
 float mxd = diam;
 float myd = diam;
@@ -71,13 +75,19 @@ color colhighlpt = color(255, 0, 0);
 color colnohighlpt = color(0, 0, 0);
 int colx = cols.length-1;
 
-int mx = 0;
-int my = 0;
+float mx = 0;
+float my = 0;
 
 void setup() {
   size(1050, 640);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
+  
+  startController(this);
+  dial1 = 0.5;
+  dial2 = 0.5;
+  dial3 = 0.5;
+  dial4 = 0.5;
 
   cp5 = new ControlP5(this); 
   Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
@@ -175,6 +185,16 @@ ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
   return tmp;
 }
 
+void redraw() {
+      int pm = min(mouseX / boxwidth, xidx.length-1);
+      int pn = min(mouseY / boxheight, yidx.length-1);
+      background(255);
+      drawscat(boxwidth, boxheight);
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+}
+
 void drawscat(int xsz, int ysz) {
   for (int i = 0; i < xidx.length; i++) {
     for (int k = 0; k < yidx.length; k++) {
@@ -250,39 +270,37 @@ int pm = 0;
 int pn = 0;
 
 void draw() {
+//  println(frameRate);
   int dt = millis();
-  //  background(255);
 
-  if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
-    if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
-      drawbox(colline, pm, pn, boxwidth, boxheight);
-      drawbox(colline, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-
-      pm = mouseX / boxwidth;
-      pn = mouseY / boxheight;
-      // highlight
-      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-    }
+  if (scalexy != exp(2*dial1)/exp(1) || transx != width * 2*(dial2-0.5) || transy != height * 2*(dial3-0.5) || diam != int(5 * exp(2*dial4)/exp(1))) {
+    scalexy = exp(2*dial1)/exp(1);
+    transx = width * 2*(dial2-0.5);
+    transy = height * 2*(dial3-0.5);
+    diam = int(5 * exp(2*dial4)/exp(1));
+    translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
+    scale(scalexy);
+    redraw();
+    println("redraw!");
+  } else {
+    translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
+    scale(scalexy);
   }
 
   if (play >= 0.0) {
 // block needs to move to a function
-  {
-    int playi = int(play);
-    float playf = play % 1;
-    float mx, my;
-    if (playi < mouseXs.size()-1) {
-      mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
-      my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
-    } else {
-      mx = mouseXs.get(playi);
-      my = mouseYs.get(playi);
+    {
+      int playi = int(play);
+      float playf = play % 1;
+//      float mx, my;
+        if (playi < mouseXs.size()-1) {
+          mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
+          my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
+        } else {
+          mx = mouseXs.get(playi);
+          my = mouseYs.get(playi);
+        }
     }
-    ptsel = closept(xidx[int(mx) / boxwidth], yidx[int(my) / boxheight], mx % boxwidth, my % boxheight, boxwidth, boxheight, mxd, myd);
-  }
     if (!pause) {
       play += playspeed;
       if (play > mouseXs.size()-1) {
@@ -294,19 +312,40 @@ void draw() {
       }
     }
   } else {
+    mx = mouseX;
+    my = mouseY;
+    mx /= scalexy;
+    mx -= width/2/scalexy + (transx-width/2);
+    my /= scalexy;
+    my -= height/2/scalexy + (transy-height/2);
     if (record) {
       if (clear) {
         mouseXs.clear();
         mouseYs.clear();
         clear = false;
       }
-      mouseXs.add(mouseX);
-      mouseYs.add(mouseY);
-    }
-    if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
-      ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight, mxd, myd);
+      mouseXs.add(mx);
+      mouseYs.add(my);
     }
   }
+
+  if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxheight >= 0 && my/boxheight < yidx.length) {
+    if (pm != my / boxwidth || pn != my / boxheight) {
+      drawbox(colline, pm, pn, boxwidth, boxheight);
+      drawbox(colline, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      pm = int(mx) / boxwidth;
+      pn = int(my) / boxheight;
+      // highlight
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+    }
+  }
+
+  if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxheight >= 0 && my/boxheight < yidx.length) {
+    ptsel = closept(xidx[int(mx) / boxwidth], yidx[int(my) / boxheight], mx % boxwidth, my % boxheight, boxwidth, boxheight, mxd, myd);
+  }
+  
   ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
   ptold.removeAll(ptsel);
   ArrayList<Integer> ptnew = new ArrayList<Integer>(ptsel);
@@ -356,17 +395,12 @@ void draw() {
 void mouseClicked() {  
 
   if (mouseButton == RIGHT) {
-    if (mouseX / boxwidth < xidx.length && mouseY / boxwidth < yidx.length){
-      soundx = mouseX / boxwidth;
-      soundy = mouseY / boxwidth;
+    if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxwidth >= 0 && my/boxwidth < yidx.length){
+      soundx = int(mx) / boxwidth;
+      soundy = int(my) / boxwidth;
     }
-    drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-//    println(xidx[soundx] + " " + yidx[soundy]);
+    redraw();
   } else {    
-    int base = millis();
-    mx = mouseX;
-    my = mouseY;
-
     if (!ptsel.isEmpty()) {
       if (! brush.removeAll(ptsel)) { // toggle selection
         brush.addAll(ptsel);
@@ -379,40 +413,29 @@ void mouseClicked() {
         }
       }
     } else {
-      background(255);
       brush.clear();
       colx = 1;
       for (int idx : ptorder) { // set all points to clear
         ptcol.set(idx, 0);
       }
-      drawscat(boxwidth, boxheight);
-      pm = min(mouseX / boxwidth, xidx.length-1);
-      pn = min(mouseY / boxheight, yidx.length-1);
-      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+      redraw();
     }
   }
 }
 
 void mouseMoved() {
   play = -1;
+  loop = false;
 }
 
 void mouseDragged() {  
   play = -1;
+  loop = false;
 
   if (!drag) { // start new drag
     drag = true;
     if (ptsel.isEmpty()) {
-      background(255);
-      drawscat(boxwidth, boxheight);
-      pm = min(mouseX / boxwidth, xidx.length-1);
-      pn = min(mouseY / boxheight, yidx.length-1);
-      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-
+//      redraw();
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
@@ -523,6 +546,7 @@ void keyPressed()
 
   case 's':
     play = -1;
+    loop = false;
     if (record) {
       record = false;
       println("stop");
@@ -538,14 +562,8 @@ void keyPressed()
       record = false;       
       println("stop");
     }
-    if (loop) {
-      loop = false;       
-//      play = -1;
-      println("stop");
-    }
-//    if (play == -1) {
     if (!pause) {
-      if (!mouseXs.isEmpty()) {
+      if (loop == false && !mouseXs.isEmpty()) {
         play = 0;
         pause = false;
         println("play");
@@ -557,6 +575,10 @@ void keyPressed()
       pause = true;
       println("pause");
     } 
+    if (loop) {
+      loop = false;       
+      println("stop");
+    }    
     break;   
 
   case 'f':
@@ -573,7 +595,7 @@ void keyPressed()
     }
 //    if (play == -1) {
     if (!pause) {
-      if (!mouseXs.isEmpty()) {
+      if (play == -1 && !mouseXs.isEmpty()) {
         play = 0;
         pause = false;
         println("play");
