@@ -88,6 +88,8 @@ void setup() {
   dial2 = 0.5;
   dial3 = 0.5;
   dial4 = 0.5;
+  dial7 = 0.5;
+  dial8 = 0.5;
 
   cp5 = new ControlP5(this); 
   Group g1 = cp5.addGroup("g1").setPosition(780, 10).setWidth(250).activateEvent(true)
@@ -272,6 +274,11 @@ int pn = 0;
 void draw() {
 //  println(frameRate);
   int dt = millis();
+
+  if (playspeed != exp(2*dial7)/exp(1) || delaysound != int(1000.0 *(dial8-0.5))) {
+    playspeed = exp(2*dial7)/exp(1);
+    delaysound = int(1000.0 *(dial8-0.5));
+  }
 
   if (scalexy != exp(2*dial1)/exp(1) || transx != width * 2*(dial2-0.5) || transy != height * 2*(dial3-0.5) || diam != int(5 * exp(2*dial4)/exp(1))) {
     scalexy = exp(2*dial1)/exp(1);
