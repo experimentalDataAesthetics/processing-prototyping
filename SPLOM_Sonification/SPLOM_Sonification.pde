@@ -20,7 +20,7 @@ int soundx = 0;
 int soundy = 1; 
 
 // Settings of SPLOM
-float diam = 3.0; // point size
+float diam = 4.0; // point size
 int boxwidth = 78;  // width of grid
 int boxheight = 78; // height of grid
 Integer[] xidx = {
@@ -364,13 +364,17 @@ void draw() {
     
     // Sonification! <<<<<<<<<--------------------<<<<<<<<<--------------------
     
+
   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
+
+  sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);  sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
     
  //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
  //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
  
  //  sendgrainFM((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), freqB*pow(2., yy),  grainsustain, -1.0);
+
 
     
     
