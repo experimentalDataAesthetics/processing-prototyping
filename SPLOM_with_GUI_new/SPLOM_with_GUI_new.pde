@@ -79,7 +79,7 @@ float mx = 0;
 float my = 0;
 
 void setup() {
-  size(1050, 640);
+  size(displayWidth, displayHeight);
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
   

@@ -21,8 +21,8 @@ int soundy = 1;
 
 // Settings of SPLOM
 float diam = 3.0; // point size
-int boxwidth = 150;  // width of grid
-int boxheight = 150; // height of grid
+int boxwidth = 250;  // width of grid
+int boxheight = 250; // height of grid
 Integer[] xidx = {
   0, 1, 2, 3, 
 }; // map grid (left-right) to dim
