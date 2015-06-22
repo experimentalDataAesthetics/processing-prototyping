@@ -26,7 +26,7 @@ float transx = 0;
 float transy = 0;
 
 // Settings of SPLOM
-float diam = 4.0; // point size
+float diam = 3.0; // point size
 int boxwidth = 78;  // width of grid
 int boxheight = 78; // height of grid
 Integer[] xidx = {
@@ -72,17 +72,17 @@ ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
 // Color settings
 color[] cols = new color [] {
-  color(255, 255, 255), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+  color(222, 222, 222), color(255, 255, 0), color(0, 0, 255), color(255, 0, 255), // color(0, 255, 255), color(255, 255, 0)
   //  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
 };
-color colline = color(0);
-color colhighlbox = color(255, 0, 0);
-color colhighlbox2 = color(255, 255, 0);
+color colline = color(255, 255, 255);
+color colhighlbox = color(30, 30, 30);
+color colhighlbox2 = color(50, 50, 50);
 color colhighlsoundsel = color(0, 255, 0);
 color colhighlpt = color(255,0,0);
 color colnohighlpt = color(255, 255, 255);
 int colx = cols.length; // what is this?
-color bckgnd = color(180, 180, 180);
+color bckgnd = color(10, 10, 10);
 
 int mx = 0;
 int my = 0;
