@@ -19,6 +19,12 @@ float freqB = 220.0;
 int soundx = 0;
 int soundy = 1; 
 
+// ?
+
+float scalexy = 1;
+float transx = 0;
+float transy = 0;
+
 // Settings of SPLOM
 float diam = 4.0; // point size
 int boxwidth = 78;  // width of grid
@@ -66,16 +72,17 @@ ArrayList<Integer> ptcol = new ArrayList<Integer>();
 
 // Color settings
 color[] cols = new color [] {
-  color(0, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
+  color(255, 255, 255), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
   //  color(0, 0, 0), color(255, 0, 0), color(0, 255, 0), color(0, 0, 255), color(255, 0, 255), color(0, 255, 255), color(255, 255, 0)
 };
-color colline = color(0, 0, 0);
+color colline = color(0);
 color colhighlbox = color(255, 0, 0);
 color colhighlbox2 = color(255, 255, 0);
 color colhighlsoundsel = color(0, 255, 0);
 color colhighlpt = color(255,0,0);
-color colnohighlpt = color(0, 0, 0);
+color colnohighlpt = color(255, 255, 255);
 int colx = cols.length; // what is this?
+color bckgnd = color(180, 180, 180);
 
 int mx = 0;
 int my = 0;
@@ -94,7 +101,7 @@ void setup() {
   cp5.setControlFont(p);
   
   Group g1 = cp5.addGroup("g1").setPosition(displayWidth-330, 10).setWidth(330).activateEvent(true)  
-  .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("GUI for SPLOM Sonificator");
+  .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("CHANGE SETTINGS");
 
   cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(100, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
  // cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("FreqA");
@@ -145,7 +152,7 @@ void setup() {
     }
   }
   
-  background(255);
+  background(bckgnd);
   drawscat(boxwidth, boxheight);
 }
 
@@ -421,7 +428,7 @@ void mouseClicked() {
         }
       }
     } else {
-      background(255);
+      background(bckgnd);
       brush.clear();
       colx = 1;
       for (int idx : ptorder) { // set all points to clear
@@ -447,7 +454,7 @@ void mouseDragged() {
   if (!drag) { // start new drag
     drag = true;
     if (ptsel.isEmpty()) {
-      background(255);
+      background(bckgnd);
       drawscat(boxwidth, boxheight);
       pm = min(mouseX / boxwidth, xidx.length-1);
       pn = min(mouseY / boxheight, yidx.length-1);
