@@ -12,15 +12,14 @@ NetAddress myRemoteLocation;
 // Sound settings
 float grainsustain = 0.01;
 float panning = 0.0;
-float freqA = 880.0; // q und d
-float freqB = 220.0;
+float freqA = 880.0;
+float freqB = 220.0;;
 
-
+// Variables/dimensions for sonification
 int soundx = 0;
-int soundy = 1; 
+int soundy = 1;
 
-
-
+// Scaling
 float scalexy = 1;
 float transx = 0;
 float transy = 0;
@@ -39,14 +38,13 @@ Integer[] yidx = {
 
 // Playback settings
 boolean record = false;
+boolean loop = false;
 boolean clear = false;
 float play = -1; // play stopped
 float playspeed = 1.0; // play speed <1 :: slowmo  >1 :: timelapse
-
-
 boolean pause = false;
-ArrayList<Integer> mouseXs = new ArrayList<Integer>();
-ArrayList<Integer> mouseYs = new ArrayList<Integer>();
+ArrayList<Float> mouseXs = new ArrayList<Float>();
+ArrayList<Float> mouseYs = new ArrayList<Float>();
 
 float mxd = diam;
 float myd = diam;
@@ -58,7 +56,7 @@ ArrayList<Integer> ptsound = new ArrayList<Integer>();
 int lastsound = 0;
 
 // delay before new sounds are played in ms. This is for playing several points at once.
-int delaysound = 0; 
+int delaysound = 0; // delay before new sounds are played in ms
 ArrayList<Float> mins = new ArrayList<Float>();
 ArrayList<Float> maxs = new ArrayList<Float>();
 
@@ -81,38 +79,53 @@ color colhighlbox2 = color(50, 50, 50);
 color colhighlsoundsel = color(0, 255, 0);
 color colhighlpt = color(255,0,0);
 color colnohighlpt = color(255, 255, 255);
-int colx = cols.length; // what is this?
+int colx = cols.length; 
 color bckgnd = color(10, 10, 10);
 
-int mx = 0;
-int my = 0;
-
+float mx = 0;
+float my = 0;
 
 void setup() {
   size(displayWidth, displayHeight);
-  initKNC2(); 
   oscP5 = new OscP5(this, 57110);
   myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
+  
+
+  startController(this);
+  dial1 = 0.5;
+  dial2 = 0.5;
+  dial3 = 0.5;
+  dial4 = 0.5;
+  dial7 = 0.5;
+  dial8 = 0.5;
+  slider1 = 0.0;
+  slider2 = 0.0;
+  slider3 = 0.0;
+  slider4 = 0.0;
+  slider5 = 0.0;
+  slider6 = 0.0;
+  slider7 = 0.0;
+  slider8 = 0.0;
 
   cp5 = new ControlP5(this); 
-   
-    // change the default font to Verdana
-  PFont p = createFont("Arial",10);
+  PFont p = createFont("Arial",10); // change the default font to Verdana
   cp5.setControlFont(p);
   
   Group g1 = cp5.addGroup("g1").setPosition(displayWidth-330, 10).setWidth(330).activateEvent(true)  
   .setBackgroundColor(color(100)).setBackgroundHeight(displayHeight).setLabel("CHANGE SETTINGS");
 
   cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(100, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
- // cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("FreqA");
   cp5.addSlider("slider5").setPosition(10, 60).setColorForeground(color(255, 0, 0)).setRange(0, 1000).setSize(100, 14).setValue(delaysound).setGroup(g1).setLabel("Trigger Delay (ms)");
 
   cp5.addSlider("slider3").setPosition(10, 80).setColorForeground(color(255, 0, 0)).setRange(0.0, boxwidth/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushwidth");
   cp5.addSlider("slider4").setPosition(10, 100).setColorForeground(color(255, 0, 0)).setRange(0.0, boxheight/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushheight");
-  cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(100, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
-  cp5.addSlider("slider7").setPosition(10, 160).setColorForeground(color(255, 0, 0)).setRange(0.1, 1.0).setSize(100, 14).setValue(1.0).setGroup(g1).setLabel("Playbackspeed slower");
 
-  
+// ANDREAS FRAGEN
+
+ cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(100, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
+ cp5.addSlider("slider7").setPosition(10, 160).setColorForeground(color(255, 0, 0)).setRange(0.1, 1.0).setSize(100, 14).setValue(1.0).setGroup(g1).setLabel("Playbackspeed slower");
+
+// ANDREAS FRAGEN
 
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -151,7 +164,6 @@ void setup() {
       }
     }
   }
-  
   background(bckgnd);
   drawscat(boxwidth, boxheight);
 }
@@ -198,6 +210,16 @@ ArrayList<Integer> closept(int m, int n, int x, int y, int xsz, int ysz) {
     }
   }
   return tmp;
+}
+
+void redraw() {
+      int pm = min(mouseX / boxwidth, xidx.length-1);
+      int pn = min(mouseY / boxheight, yidx.length-1);
+      background(bckgnd);
+      drawscat(boxwidth, boxheight);
+      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
+      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
+      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
 }
 
 void drawscat(int xsz, int ysz) {
@@ -275,19 +297,79 @@ int pm = 0;
 int pn = 0;
 
 void draw() {
-  updateKNC2(); 
-  int dt = millis();  
- 
-  //  background(255);
+//  println(frameRate);
+  int dt = millis();
 
-  if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
-    if (pm != mouseX / boxwidth || pn != mouseY / boxheight) {
+// ANDREAS FRAGEN
+  if (playspeed != exp(2*dial7)/exp(1) || delaysound != int(1000.0 *(dial8-0.5))) {
+    playspeed = exp(2*dial7)/exp(1);
+    delaysound = int(1000.0 *(dial8-0.5));
+  }
+// ANDREAS FRAGEN  
+  
+
+  if (scalexy != exp(2*dial3)/exp(1) || transx != width * 2*(dial4-0.5) || transy != height * 2*(dial3-0.5) || diam != int(5 * exp(2*dial4)/exp(1))) {
+    scalexy = exp(2*dial3)/exp(1);
+    transx = width * 2*(dial4-0.5);
+    transy = height * 2*(dial5-0.5);
+    diam = int(5 * exp(2*dial6)/exp(1));
+    translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
+    scale(scalexy);
+    redraw();
+    println("redraw!");
+  } else {
+    translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
+    scale(scalexy);
+  }
+
+  if (play >= 0.0) {
+// block needs to move to a function
+    {
+      int playi = int(play);
+      float playf = play % 1;
+//      float mx, my;
+        if (playi < mouseXs.size()-1) {
+          mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
+          my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
+        } else {
+          mx = mouseXs.get(playi);
+          my = mouseYs.get(playi);
+        }
+    }
+    if (!pause) {
+      play += playspeed;
+      if (play > mouseXs.size()-1) {
+        if (loop) {
+          play = 0; // loop 
+        } else {
+          play = -1; // play stopped
+        }
+      }
+    }
+  } else {
+    mx = mouseX;
+    my = mouseY;
+    mx /= scalexy;
+    mx -= width/2/scalexy + (transx-width/2);
+    my /= scalexy;
+    my -= height/2/scalexy + (transy-height/2);
+    if (record) {
+      if (clear) {
+        mouseXs.clear();
+        mouseYs.clear();
+        clear = false;
+      }
+      mouseXs.add(mx);
+      mouseYs.add(my);
+    }
+  }
+
+  if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxheight >= 0 && my/boxheight < yidx.length) {
+    if (pm != my / boxwidth || pn != my / boxheight) {
       drawbox(colline, pm, pn, boxwidth, boxheight);
       drawbox(colline, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-
-      pm = mouseX / boxwidth;
-      pn = mouseY / boxheight;
+      pm = int(mx) / boxwidth;
+      pn = int(my) / boxheight;
       // highlight
       drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
@@ -295,41 +377,10 @@ void draw() {
     }
   }
 
-  if (play >= 0.0) {
-// block needs to move to a function
-  {
-    int playi = int(play);
-    float playf = play % 1;
-    float mx, my;
-    if (playi < mouseXs.size()-1) {
-      mx = (1.-playf)*mouseXs.get(playi) + (playf)*mouseXs.get(playi+1);
-      my = (1.-playf)*mouseYs.get(playi) + (playf)*mouseYs.get(playi+1);
-    } else {
-      mx = mouseXs.get(playi);
-      my = mouseYs.get(playi);
-    }
+  if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxheight >= 0 && my/boxheight < yidx.length) {
     ptsel = closept(xidx[int(mx) / boxwidth], yidx[int(my) / boxheight], mx % boxwidth, my % boxheight, boxwidth, boxheight, mxd, myd);
   }
-    if (!pause) {
-      play += playspeed;
-      if (play > mouseXs.size()-1) {
-        play = -1; // play stopped
-      }
-    }
-  } else {
-    if (record) {
-      if (clear) {
-        mouseXs.clear();
-        mouseYs.clear();
-        clear = false;
-      }
-      mouseXs.add(mouseX);
-      mouseYs.add(mouseY);
-    }
-    if (mouseX / boxwidth < xidx.length && mouseY / boxheight < yidx.length) {
-      ptsel = closept(xidx[mouseX / boxwidth], yidx[mouseY / boxheight], mouseX % boxwidth, mouseY % boxheight, boxwidth, boxheight, mxd, myd);
-    }
-  }
+  
   ArrayList<Integer> ptold = new ArrayList<Integer>(ptprev);
   ptold.removeAll(ptsel);
   ArrayList<Integer> ptnew = new ArrayList<Integer>(ptsel);
@@ -358,7 +409,6 @@ void draw() {
   }
 
   ptsound.addAll(ptnew);
-  
   if (millis() - lastsound > delaysound) {
     lastsound = millis();
   for (int idx : ptsound) {
@@ -368,53 +418,35 @@ void draw() {
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     int sz = ptsound.size();
     println(sz);
-    
-    // Sonification! <<<<<<<<<--------------------<<<<<<<<<--------------------
-    
-
-   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
-   // sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
-   
-    
- //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
- //  sendosc((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
- 
- //  sendgrainFM((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), freqB*pow(2., yy),  grainsustain, -1.0);
-
-
-    
-    
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, 1.0);
+    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0);
   } 
   ptsound.clear();
   }
-
   ptprev = ptsel;
+ 
+   //Control sliders with MIDI 
+  cp5.getController("slider1").setValue(slider1*0.3); 
+  cp5.getController("slider3").setValue(dial1*boxwidth/2); 
+  cp5.getController("slider4").setValue(dial2*boxheight/2); 
+  cp5.getController("slider5").setValue(slider2*1000); 
   
-  
-  //Control sliders with MIDI (wrapper by Ludwig Zeller)
-  cp5.getController("slider1").setValue(midi.value(0, 0.5, 0.01)); //mapping reversed (big number at 0, small number at 127, due to some "initial value bug")
-  cp5.getController("slider3").setValue(midi.value(16, boxwidth/2, 4)); //mapping reversed
-  cp5.getController("slider4").setValue(midi.value(17, boxheight/2, 4)); //mapping reversed
-  cp5.getController("slider5").setValue(midi.value(1, 1000, 0)); //mapping reversed
-  cp5.getController("slider6").setValue(midi.value(7, 25.0, 1.0)); //mapping reversed
-//  cp5.getController("slider7").setValue(midi.value(7, 0.1, 1.0)); //mapping reversed  
-  
+// ANDREAS FRAGEN  
+ // cp5.getController("slider6").setValue(dial7*25.0); 
+ // cp5.getController("slider7").setValue(dial8*0.1); 
+// ANDREAS FRAGEN
+
 } 
 
 void mouseClicked() {  
 
   if (mouseButton == RIGHT) {
-    if (mouseX / boxwidth < xidx.length && mouseY / boxwidth < yidx.length){
-      soundx = mouseX / boxwidth;
-      soundy = mouseY / boxwidth;
+    if (mx/boxwidth >= 0 && mx/boxwidth < xidx.length && my/boxwidth >= 0 && my/boxwidth < yidx.length){
+      soundx = int(mx) / boxwidth;
+      soundy = int(my) / boxwidth;
     }
-    drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-//    println(xidx[soundx] + " " + yidx[soundy]);
+    redraw();
   } else {    
-    int base = millis();
-    mx = mouseX;
-    my = mouseY;
-
     if (!ptsel.isEmpty()) {
       if (! brush.removeAll(ptsel)) { // toggle selection
         brush.addAll(ptsel);
@@ -427,40 +459,29 @@ void mouseClicked() {
         }
       }
     } else {
-      background(bckgnd);
       brush.clear();
       colx = 1;
       for (int idx : ptorder) { // set all points to clear
         ptcol.set(idx, 0);
       }
-      drawscat(boxwidth, boxheight);
-      pm = min(mouseX / boxwidth, xidx.length-1);
-      pn = min(mouseY / boxheight, yidx.length-1);
-      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+      redraw();
     }
   }
 }
 
 void mouseMoved() {
   play = -1;
+  loop = false;
 }
 
 void mouseDragged() {  
   play = -1;
+  loop = false;
 
   if (!drag) { // start new drag
     drag = true;
     if (ptsel.isEmpty()) {
-      background(bckgnd);
-      drawscat(boxwidth, boxheight);
-      pm = min(mouseX / boxwidth, xidx.length-1);
-      pn = min(mouseY / boxheight, yidx.length-1);
-      drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
-      drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
-      drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
-
+//      redraw();
       colx = colx+1 > cols.length-1 ? 1 : colx+1; // next color without brush
     } else {
       // max color under selection
@@ -491,12 +512,11 @@ void mouseReleased() {
   drag = false;
 }
 
-// 
-
 void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
+  //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
   myMessage.add("grainblip"); 
   myMessage.add(-1); 
   myMessage.add(0); 
@@ -513,46 +533,34 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   oscP5.send(myBundle, myRemoteLocation);
 }
 
-void sendosc(float amp, float freq, float sstn, float pan) {
-  OscBundle myBundle = new OscBundle();
-  myBundle.setTimetag(myBundle.now());  // and time tag          
-  OscMessage myMessage = new OscMessage("/s_new");         
-  myMessage.add("testsynth"); 
-  myMessage.add(-1); 
-  myMessage.add(0); 
-  myMessage.add(1);
-  myMessage.add("amp"); 
-  myMessage.add(amp);   
-  myMessage.add("freq"); 
-  myMessage.add(freq); 
-  myMessage.add("sustain"); 
-  myMessage.add(sstn); 
-  myMessage.add("pan"); 
-  myMessage.add(pan);  
-  myBundle.add(myMessage); 
-  oscP5.send(myBundle, myRemoteLocation);
+void slider1(float slidervalue1) {
+  grainsustain = slidervalue1;
+  //println("a numberbox event. setting grain sustain to "+slidervalue1);
 }
 
-void sendgrainFM(float amp, float carfreq, float modfreq, float sstn, float pan) {
-  OscBundle myBundle = new OscBundle();
-  myBundle.setTimetag(myBundle.now());  // and time tag          
-  OscMessage myMessage = new OscMessage("/s_new");         
-  myMessage.add("grainFM"); 
-  myMessage.add(-1); 
-  myMessage.add(0); 
-  myMessage.add(1);
-  myMessage.add("amp"); 
-  myMessage.add(amp);   
-  myMessage.add("carfreq"); 
-  myMessage.add(carfreq); 
-  myMessage.add("modfreq"); 
-  myMessage.add(modfreq); 
-  myMessage.add("sustain"); 
-  myMessage.add(sstn); 
-  myMessage.add("pan"); 
-  myMessage.add(pan);  
-  myBundle.add(myMessage); 
-  oscP5.send(myBundle, myRemoteLocation);
+void slider2(float slidervalue2) {
+  panning = slidervalue2;
+  //println("a numberbox event. setting grain sustain to "+slidervalue2);
+}
+
+void slider3(int slidervalue3) {
+  mxd = slidervalue3;
+}
+
+void slider4(int slidervalue4) {
+  myd = slidervalue4;
+}
+
+void slider5(int slidervalue5) {
+  delaysound = slidervalue5;
+}
+
+void slider6(float slidervalue6) {
+  playspeed = slidervalue6;
+}
+
+void slider7(float slidervalue7) {
+  playspeed = slidervalue7;
 }
 
 void keyPressed()
@@ -633,35 +641,5 @@ void keyPressed()
   default: 
     break;
   }
-}
-
-void slider1(float slidervalue1) {
-  grainsustain = slidervalue1;
-    //println("a numberbox event. setting grain sustain to "+slidervalue1);
-}
-
-//void slider2(float slidervalue2) {
-//  panning = slidervalue2;
-//  //println("a numberbox event. setting grain sustain to "+slidervalue2);
-//}
-
-void slider3(int slidervalue3) {
-  mxd = slidervalue3;
-}
-
-void slider4(int slidervalue4) {
-  myd = slidervalue4;
-}
-
-void slider5(int slidervalue5) {
-  delaysound = slidervalue5;
-}
-
-void slider6(float slidervalue6) {
-  playspeed = slidervalue6;
-}
-
-void slider7(float slidervalue7) {
-  playspeed = slidervalue7;
 }
 
