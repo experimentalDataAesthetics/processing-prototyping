@@ -26,9 +26,9 @@ float transx = 0;
 float transy = 0;
 
 // Settings of SPLOM
-float diam = 3.0; // point size
-int boxwidth = 78;  // width of grid
-int boxheight = 78; // height of grid
+float diam = 2.5; // point size
+int boxwidth = 65;  // width of grid
+int boxheight = 65; // height of grid
 Integer[] xidx = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
 }; // map grid (left-right) to dim
@@ -97,11 +97,11 @@ void setup() {
   cp5 = new ControlP5(this); 
    
     // change the default font to Verdana
-  PFont p = createFont("Verdana",15);
+  PFont p = createFont("Arial",10);
   cp5.setControlFont(p);
   
   Group g1 = cp5.addGroup("g1").setPosition(displayWidth-330, 10).setWidth(330).activateEvent(true)  
-  .setBackgroundColor(color(180)).setBackgroundHeight(displayHeight).setLabel("CHANGE SETTINGS");
+  .setBackgroundColor(color(100)).setBackgroundHeight(displayHeight).setLabel("CHANGE SETTINGS");
 
   cp5.addSlider("slider1").setPosition(10, 30).setColorForeground(color(255, 0, 0)).setRange(0.01, 0.5).setSize(100, 14).setValue(grainsustain).setGroup(g1).setLabel("Grain Sustain");
  // cp5.addSlider("slider2").setPosition(10, 30).setRange(0.0, 100.0).setSize(90, 14).setValue(100.0).setGroup(g1).setLabel("FreqA");
@@ -498,7 +498,7 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   OscBundle myBundle = new OscBundle();
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
-  myMessage.add("grain2"); 
+  myMessage.add("grainblip"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);

@@ -44,4 +44,13 @@ SynthDef("grainFM", {|out, carfreq=440, modfreq=20, moddepth = 1, sustain=0.02, 
 	OffsetOut.ar(out, Pan2.ar(sound, pan))
 }, \ir ! 5).add;
 
+SynthDef("grainblip", { |out, amp=0.1, freq=440, sustain=0.01, pan|
+	var snd = Blip.ar(freq);
+	var amp2 = amp * AmpComp.ir(freq.max(50)) * 0.5;
+	var env = EnvGen.ar(Env.perc(sustain, 0.09), doneAction: 2);
+	OffsetOut.ar(out, Pan2.ar(snd * env, pan));
+}, \ir ! 5).add;
+
+
+
 )
