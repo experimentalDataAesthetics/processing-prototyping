@@ -25,9 +25,9 @@ float transx = 0;
 float transy = 0;
 
 // Settings of SPLOM
-float diam = 2.5; // point size
-int boxwidth = 65;  // width of grid
-int boxheight = 65; // height of grid
+float diam = 2.0; // point size
+int boxwidth = 55;  // width of grid
+int boxheight = 55; // height of grid
 Integer[] xidx = {
   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
 }; // map grid (left-right) to dim
@@ -92,10 +92,12 @@ void setup() {
   
 
   startController(this);
-  dial1 = 0.5;
-  dial2 = 0.5;
+  dial1 = 0.1;
+  dial2 = 0.1;
   dial3 = 0.5;
   dial4 = 0.5;
+  dial5 = 0.5;
+  dial6 = 0.5; 
   dial7 = 0.5;
   dial8 = 0.5;
   slider1 = 0.0;
@@ -231,7 +233,7 @@ void drawscat(int xsz, int ysz) {
 }
 
 void drawscat(int m, int n, int x, int y, int xsz, int ysz) {
-  stroke(128);
+  stroke(255);
   noFill();
   rect(x, y, xsz, ysz);
   xsz-=diam;
@@ -308,7 +310,7 @@ void draw() {
 // ANDREAS FRAGEN  
   
 
-  if (scalexy != exp(2*dial3)/exp(1) || transx != width * 2*(dial4-0.5) || transy != height * 2*(dial3-0.5) || diam != int(5 * exp(2*dial4)/exp(1))) {
+  if (scalexy != exp(2*dial3)/exp(1) || transx != width * 2*(dial4-0.5) || transy != height * 2*(dial5-0.5) || diam != int(diam * exp(2*dial6)/exp(1))) {
     scalexy = exp(2*dial3)/exp(1);
     transx = width * 2*(dial4-0.5);
     transy = height * 2*(dial5-0.5);
