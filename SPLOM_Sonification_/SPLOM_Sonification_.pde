@@ -19,21 +19,21 @@ float freqB = 220.0;;
 int soundx = 0;
 int soundy = 1;
 
-// Scaling
-float scalexy = 1;
-float transx = 0;
-float transy = 0;
+// Scaling and Shifting
+float scalexy = 1.0;
+float transx = 0.0;
+float transy = 0.0;
+float zoom = 0.5; //Slider 7
+float horizontal = 0.5; // Slider 8
+float vertical = 0.5; // Slider 9
+float pointsize = 0.5; // Slider 10
 
 // Settings of SPLOM
-float diam = 2.0; // point size
+float diam = 2.2; // point size
 int boxwidth = 55;  // width of grid
 int boxheight = 55; // height of grid
-Integer[] xidx = {
-  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
-}; // map grid (left-right) to dim
-Integer[] yidx = {
-  1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 
-}; // map grid (top-down) to dim
+Integer[] xidx = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, }; // map grid (left-right) to dim
+Integer[] yidx = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, }; // map grid (top-down) to dim
 //Integer[] yidx = {8, 7, 6, 5, 4, 3, 2}; // map grid (top-down) to dim
 
 // Playback settings
@@ -85,30 +85,13 @@ color bckgnd = color(10, 10, 10);
 float mx = 0;
 float my = 0;
 
+
 void setup() {
   size(displayWidth, displayHeight);
   oscP5 = new OscP5(this, 57110);
-  myRemoteLocation = new NetAddress("127.0.0.1", 57110);  
+  initKNC2(); 
+  myRemoteLocation = new NetAddress("127.0.0.1", 57110); 
   
-
-  startController(this);
-  dial1 = 0.1;
-  dial2 = 0.1;
-  dial3 = 0.5;
-  dial4 = 0.5;
-  dial5 = 0.5;
-  dial6 = 0.5; 
-  dial7 = 0.5;
-  dial8 = 0.5;
-  slider1 = 0.0;
-  slider2 = 0.0;
-  slider3 = 0.0;
-  slider4 = 0.0;
-  slider5 = 0.0;
-  slider6 = 0.0;
-  slider7 = 0.0;
-  slider8 = 0.0;
-
   cp5 = new ControlP5(this); 
   PFont p = createFont("Arial",10); // change the default font to Verdana
   cp5.setControlFont(p);
@@ -122,12 +105,13 @@ void setup() {
   cp5.addSlider("slider3").setPosition(10, 80).setColorForeground(color(255, 0, 0)).setRange(0.0, boxwidth/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushwidth");
   cp5.addSlider("slider4").setPosition(10, 100).setColorForeground(color(255, 0, 0)).setRange(0.0, boxheight/2).setSize(100, 14).setValue(diam).setGroup(g1).setLabel("Brushheight");
 
-// ANDREAS FRAGEN
+  cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 50.0).setSize(100, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
 
- cp5.addSlider("slider6").setPosition(10, 140).setColorForeground(color(255, 0, 0)).setRange(1.0, 25.0).setSize(100, 14).setValue(playspeed).setGroup(g1).setLabel("Playbackspeed faster");
- cp5.addSlider("slider7").setPosition(10, 160).setColorForeground(color(255, 0, 0)).setRange(0.1, 1.0).setSize(100, 14).setValue(1.0).setGroup(g1).setLabel("Playbackspeed slower");
+  cp5.addSlider("slider7").setPosition(10, 180).setColorForeground(color(255, 0, 0)).setRange(0.0, 1.0).setSize(100, 14).setValue(zoom).setGroup(g1).setLabel("Zoom");
+  cp5.addSlider("slider8").setPosition(10, 200).setColorForeground(color(255, 0, 0)).setRange(0.0, 1.0).setSize(100, 14).setValue(horizontal).setGroup(g1).setLabel("Horizontal Position");
+  cp5.addSlider("slider9").setPosition(10, 220).setColorForeground(color(255, 0, 0)).setRange(0.0, 1.0).setSize(100, 14).setValue(vertical).setGroup(g1).setLabel("Vertical Position");
+  cp5.addSlider("slider10").setPosition(10, 240).setColorForeground(color(255, 0, 0)).setRange(0.0, 1.0).setSize(100, 14).setValue(pointsize).setGroup(g1).setLabel("Point Size");
 
-// ANDREAS FRAGEN
 
   // Open the file from the createWriter() example
   reader = createReader("wine.data"); 
@@ -299,22 +283,23 @@ int pm = 0;
 int pn = 0;
 
 void draw() {
+    updateKNC2(); 
 //  println(frameRate);
   int dt = millis();
-
-// ANDREAS FRAGEN
-  if (playspeed != exp(2*dial7)/exp(1) || delaysound != int(1000.0 *(dial8-0.5))) {
-    playspeed = exp(2*dial7)/exp(1);
-    delaysound = int(1000.0 *(dial8-0.5));
-  }
-// ANDREAS FRAGEN  
   
-
-  if (scalexy != exp(2*dial3)/exp(1) || transx != width * 2*(dial4-0.5) || transy != height * 2*(dial5-0.5) || diam != int(diam * exp(2*dial6)/exp(1))) {
-    scalexy = exp(2*dial3)/exp(1);
-    transx = width * 2*(dial4-0.5);
-    transy = height * 2*(dial5-0.5);
-    diam = int(5 * exp(2*dial6)/exp(1));
+  //for what?
+  if (playspeed != playspeed || delaysound != int(delaysound)) {
+    playspeed = playspeed;
+    delaysound = int(delaysound);
+  }
+ 
+ // change? buggy?
+ 
+  if (scalexy != exp(2*zoom)/exp(1) || transx != width * 2*(horizontal-0.5) || transy != height * 2*(vertical-0.5) || diam != int(3*exp(2*pointsize)/exp(1))) {
+    scalexy = exp(2*zoom)/exp(1);
+    transx = width * 2*(horizontal-0.5);
+    transy = height * 2*(vertical-0.5);
+    diam = int(3*exp(2*pointsize)/exp(1));
     translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
     scale(scalexy);
     redraw();
@@ -322,6 +307,7 @@ void draw() {
   } else {
     translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
     scale(scalexy);
+
   }
 
   if (play >= 0.0) {
@@ -409,6 +395,8 @@ void draw() {
       ptcol.set(idx, colx);
     }
   }
+  
+  // SONIFICATION
 
   ptsound.addAll(ptnew);
   if (millis() - lastsound > delaysound) {
@@ -426,19 +414,66 @@ void draw() {
   ptsound.clear();
   }
   ptprev = ptsel;
- 
-   //Control sliders with MIDI 
-  cp5.getController("slider1").setValue(slider1*0.3); 
-  cp5.getController("slider3").setValue(dial1*boxwidth/2); 
-  cp5.getController("slider4").setValue(dial2*boxheight/2); 
-  cp5.getController("slider5").setValue(slider2*1000); 
-  
-// ANDREAS FRAGEN  
- // cp5.getController("slider6").setValue(dial7*25.0); 
- // cp5.getController("slider7").setValue(dial8*0.1); 
-// ANDREAS FRAGEN
+   
+  // MIDI Settings 
+   
+ //activierungen für midi
+  //Control sliders with MIDI (wrapper by Ludwig Zeller)
+  cp5.getController("slider1").setValue(midi.value(0, 0.5, 0.01)); //mapping reversed (big number at 0, small number at 127, due to some "initial value bug")
+  cp5.getController("slider5").setValue(midi.value(1, 1000, 0)); //mapping reversed, MIDI 1 is second slider at Korg Nano
+  cp5.getController("slider6").setValue(midi.value(7, 50.0, 1.0)); //mapping reversed
 
+  cp5.getController("slider3").setValue(midi.value(16, boxwidth/2, diam)); //mapping reversed
+  cp5.getController("slider4").setValue(midi.value(17, boxheight/2, diam)); //mapping reversed
+  cp5.getController("slider7").setValue(midi.value(18, 1.0, 0.0)); //mapping reversed
+  cp5.getController("slider8").setValue(midi.value(19, 1.0, 0.0)); //mapping reversed  
+  cp5.getController("slider9").setValue(midi.value(20, 1.0, 0.0)); //mapping reversed
+  cp5.getController("slider10").setValue(midi.value(21, 1.0, 0.0)); //mapping reversed  
+   
+ 
 } 
+
+void slider1(float slidervalue1) {
+  grainsustain = slidervalue1;
+  //println("a numberbox event. setting grain sustain to "+slidervalue1);
+}
+
+void slider2(float slidervalue2) {
+  panning = slidervalue2;
+  //println("a numberbox event. setting grain sustain to "+slidervalue2);
+}
+
+void slider3(int slidervalue3) {
+  mxd = slidervalue3;
+}
+
+void slider4(int slidervalue4) {
+  myd = slidervalue4;
+}
+
+void slider5(int slidervalue5) {
+  delaysound = slidervalue5;
+}
+
+void slider6(float slidervalue6) {
+  playspeed = slidervalue6;
+}
+
+void slider7(float slidervalue7) {
+  zoom = slidervalue7;
+}
+
+void slider8(float slidervalue8) {
+  horizontal = slidervalue8;
+}
+
+void slider9(float slidervalue9) {
+  vertical = slidervalue9;
+}
+
+void slider10(float slidervalue10) {
+  pointsize = slidervalue10;
+}
 
 void mouseClicked() {  
 
@@ -533,36 +568,6 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myMessage.add(pan);  
   myBundle.add(myMessage); 
   oscP5.send(myBundle, myRemoteLocation);
-}
-
-void slider1(float slidervalue1) {
-  grainsustain = slidervalue1;
-  //println("a numberbox event. setting grain sustain to "+slidervalue1);
-}
-
-void slider2(float slidervalue2) {
-  panning = slidervalue2;
-  //println("a numberbox event. setting grain sustain to "+slidervalue2);
-}
-
-void slider3(int slidervalue3) {
-  mxd = slidervalue3;
-}
-
-void slider4(int slidervalue4) {
-  myd = slidervalue4;
-}
-
-void slider5(int slidervalue5) {
-  delaysound = slidervalue5;
-}
-
-void slider6(float slidervalue6) {
-  playspeed = slidervalue6;
-}
-
-void slider7(float slidervalue7) {
-  playspeed = slidervalue7;
 }
 
 void keyPressed()
