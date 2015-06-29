@@ -23,6 +23,7 @@ int soundy = 1;
 float scalexy = 1.0;
 float transx = 0.0;
 float transy = 0.0;
+
 float zoom = 0.5; //Slider 7
 float horizontal = 0.5; // Slider 8
 float vertical = 0.5; // Slider 9
@@ -91,6 +92,11 @@ void setup() {
   oscP5 = new OscP5(this, 57110);
   initKNC2(); 
   myRemoteLocation = new NetAddress("127.0.0.1", 57110); 
+  
+  float zoom = 0.5; //Slider 7
+  float horizontal = 0.5; // Slider 8
+  float vertical = 0.5; // Slider 9
+  float pointsize = 0.5; // Slider 10
   
   cp5 = new ControlP5(this); 
   PFont p = createFont("Arial",10); // change the default font to Verdana
@@ -287,14 +293,6 @@ void draw() {
 //  println(frameRate);
   int dt = millis();
   
-  //for what?
-  if (playspeed != playspeed || delaysound != int(delaysound)) {
-    playspeed = playspeed;
-    delaysound = int(delaysound);
-  }
- 
- // change? buggy?
- 
   if (scalexy != exp(2*zoom)/exp(1) || transx != width * 2*(horizontal-0.5) || transy != height * 2*(vertical-0.5) || diam != int(3*exp(2*pointsize)/exp(1))) {
     scalexy = exp(2*zoom)/exp(1);
     transx = width * 2*(horizontal-0.5);
@@ -414,7 +412,8 @@ void draw() {
   ptsound.clear();
   }
   ptprev = ptsel;
-   
+ 
+ /*  
   // MIDI Settings 
    
  //activierungen für midi
@@ -425,11 +424,13 @@ void draw() {
 
   cp5.getController("slider3").setValue(midi.value(16, boxwidth/2, diam)); //mapping reversed
   cp5.getController("slider4").setValue(midi.value(17, boxheight/2, diam)); //mapping reversed
+  
   cp5.getController("slider7").setValue(midi.value(18, 1.0, 0.0)); //mapping reversed
   cp5.getController("slider8").setValue(midi.value(19, 1.0, 0.0)); //mapping reversed  
   cp5.getController("slider9").setValue(midi.value(20, 1.0, 0.0)); //mapping reversed
   cp5.getController("slider10").setValue(midi.value(21, 1.0, 0.0)); //mapping reversed  
-   
+  
+  */ 
  
 } 
 
