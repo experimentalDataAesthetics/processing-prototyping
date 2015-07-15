@@ -43,6 +43,8 @@ boolean pause = false;
 ArrayList<Float> mouseXs = new ArrayList<Float>();
 ArrayList<Float> mouseYs = new ArrayList<Float>();
 
+boolean redraw = true;
+
 float mxd = diam;
 float myd = diam;
 
@@ -195,6 +197,8 @@ void redraw() {
       drawbox(colhighlbox2, Arrays.asList(xidx).indexOf(yidx[pn]), Arrays.asList(yidx).indexOf(xidx[pm]), boxwidth, boxheight);
       drawbox(colhighlbox, pm, pn, boxwidth, boxheight);
       drawonebox(colhighlsoundsel, soundx, soundy, boxwidth, boxheight);
+      
+      redraw = false;
 }
 
 void drawscat(int xsz, int ysz) {
@@ -253,12 +257,17 @@ void drawbox(color c, int m, int n, int xsz, int ysz) {
   stroke(c);
   noFill();
 
+if (n != -1) {
   for (int i = 0; i < xidx.length; i++) {
     rect(i*xsz, n*ysz, xsz, ysz);
   }
+}
+
+if (m != -1) {
   for (int i = 0; i < yidx.length; i++) {
     rect(m*xsz, i*ysz, xsz, ysz);
   }
+}
 }
 
 void drawonebox(color c, int m, int n, int xsz, int ysz) {
@@ -281,17 +290,21 @@ void draw() {
   }
 
   if (scalexy != exp(2*dial1)/exp(1) || transx != width * 2*(dial2-0.5) || transy != height * 2*(dial3-0.5) || diam != int(5 * exp(2*dial4)/exp(1))) {
+    redraw = true;
+    
     scalexy = exp(2*dial1)/exp(1);
     transx = width * 2*(dial2-0.5);
     transy = height * 2*(dial3-0.5);
     diam = int(5 * exp(2*dial4)/exp(1));
+  }
+
+// begin of drawing
+    pushMatrix();
     translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
     scale(scalexy);
+
+  if (redraw) {
     redraw();
-    println("redraw!");
-  } else {
-    translate(width/2 + scalexy*(transx-width/2), height/2 + scalexy*(transy-height/2));  
-    scale(scalexy);
   }
 
   if (play >= 0.0) {
@@ -373,6 +386,9 @@ void draw() {
     drawsel(colhighlpt, idx, boxwidth, boxheight);
   }
 
+// end of drawing
+  popMatrix();
+  
   if (drag) {
     brush.addAll(ptnew);
     for (int idx : ptnew) {
@@ -406,7 +422,8 @@ void mouseClicked() {
       soundx = int(mx) / boxwidth;
       soundy = int(my) / boxwidth;
     }
-    redraw();
+    redraw = true;
+//    redraw();
   } else {    
     if (!ptsel.isEmpty()) {
       if (! brush.removeAll(ptsel)) { // toggle selection
@@ -425,7 +442,8 @@ void mouseClicked() {
       for (int idx : ptorder) { // set all points to clear
         ptcol.set(idx, 0);
       }
-      redraw();
+    redraw = true;
+//      redraw();
     }
   }
 }
