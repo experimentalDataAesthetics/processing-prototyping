@@ -406,8 +406,8 @@ void draw() {
     float yy = (pts.get(idx).get(x2)-mins.get(x2)) / (maxs.get(x2)-mins.get(x2)); // normalize value
     int sz = ptsound.size();
     println(sz);
-    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
-    sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
+    // sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqA*pow(2., xx), grainsustain, panning/100);
+   sendosctograin((sz < 4 ? 0.1 : 0.1/sz), freqB*pow(2., yy), grainsustain, -1.0*(panning/100));
   } 
   ptsound.clear();
   }
@@ -496,7 +496,7 @@ void sendosctograin(float amp, float freq, float sstn, float pan) {
   myBundle.setTimetag(myBundle.now());  // and time tag          
   OscMessage myMessage = new OscMessage("/s_new");         
   //myMessage.add("grain");   // works with the Grain-Synthdef loaded by SC
-  myMessage.add("grain2"); 
+  myMessage.add("grainblip"); 
   myMessage.add(-1); 
   myMessage.add(0); 
   myMessage.add(1);
